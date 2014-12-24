@@ -12,9 +12,11 @@ recommended copy to folder is home/natbit or (C:/User/Yourname/natbit).  unzip a
 
 to run, start J with the jqt command
 
+Ensure all additional packages are installed by running Tools | Package manager
+
 open a lab with Help|Studio|Labs (The first one Introduction to J is fine)
 
-If this is your first time using J, you can advance throug a few steps in the lab to learn a bit about the language.
+If this is your first time using J, you can advance throug a few steps (with ctrl-J key) in the lab to learn a bit about the language.
 
 to start the program, type (assuming you copied files to home/natbit)
 
