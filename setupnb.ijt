@@ -1,0 +1,474 @@
+LABTITLE=: 'setup Natural Bit Keys'
+LABERRORS=: 1
+LABFOCUS=: 0
+
+NB. =========================================================
+Lab Chapter Rules and Introduction
+NB. =========================================================
+
+NB. =========================================================
+Lab Section Intro
+  This lab shows how to setup natbit and create encryption keys
+
+  can be run with: lab_jlab_ 'setupnb.ijt' (open a random lab to have lab verb loaded)
+
+  Chapters of this setup Lab are:
+
+ Chapter 1 - Rules and introduction  
+ Chapter 2 - Program and path setup  
+ Chapter 3 - encryption key setup  
+ Chapter 4 - encryption tests and tutorials  
+ Chapter 5 - Confirmation setup -  Received email confirming acceptance to society.
+ Chapter 6 - Making Account changes 
+
+  Press Menu item Help | Studio | Labs | Chapters to jump directly to a chapter.
+
+  If this is your first time running setup, please go through sections in order:
+  Press Menu item Help | Studio | Labs | Advance to proceed to next section at any time.
+
+Press Ctrl-J on desktop/laptop computers to advance.
+
+
+)
+require 'general/dirutils'     NB. if error, then use package manager to install all addons before proceeding.
+
+
+
+
+NB. =========================================================
+Lab Section
+  If previous text showed an error, you needed to install all addons in J
+
+  Use Tools | Package Manager.  Click the "Not Installed" button.  Then the "Install" button.
+
+  If the require line below has an error, then you need to restart this lab.
+)
+require 'general/dirutils'     NB. if error, then after package manager instructions followed.  Restart this lab.
+
+Lab Section Introduction
+More information on this program will be released shortly.
+)
+
+NB. =========================================================
+Lab Chapter Program setup
+NB. =========================================================
+
+NB. =========================================================
+Lab Section Paths
+  APPDIR holds the location of program files
+  APPDATA holds the location of data files
+
+  These will be empty the first time you run this lab.  The next few sections will help you set these paths.
+  jpath is a J verb that helps create full paths.  A '~' refers to your home directory.
+)
+PREPARE
+
+3 : 0 ''
+f =. fread    (jpath '~install'),'/', 'nbpath.settings'
+if. _1 = f do. f =. fread    (jpath '~/natbit/'), 'nbpath.settings' end.
+if. _1 = f do. 'APPDIR APPDATA' =: 2$a: 
+smoutput 'APPDIR and APPDATA have not had their paths set yet'
+else. 'APPDIR APPDATA' =: 3!:2 f end.
+)
+PREPARE
+APPDIR 
+APPDATA
+jpath '~/natbit/'
+NB. =========================================================
+Lab Section
+  Its recommended to place the app and data paths to jpath '~/natbit/'
+  The app folder will be very small, and so there is no obvious reason to avoid this recommendation.
+  The data folder may one day grow to a few gigabytes, or more if extensive backups are kept.
+
+In J, the =: charater provides assignment to a variable on the left of =:, assigning it the expression on the right.
+
+  The recommended path has been set if the variables were previously empty.
+
+
+  To set individual paths copy and edit either of the following lines. copy either line and paste it. It will appear at the bottom of this session.  You may edit it there, then press enter to execute it:
+
+example templates:
+
+  APPDIR =: jpath '~/natbit/'
+
+  APPDATA =: 'd:/some/path/that/will/be/created/edit*this*text/' 
+
+  If using windows (or mac linux), the text inside quotes may be copied from the file explorer header bar of a folder.  Then placed inside the single quotes.
+  Ensure there is a trailing / in the folder name.
+)
+PREPARE
+3 : 0 ''
+if. 0 = # APPDIR do. 'APPDIR APPDATA' =: 2 # < jpath '~/natbit/' end.
+) 
+PREPARE
+APPDIR
+APPDATA
+
+NB. =========================================================
+Lab Section
+  APPDIR and APPDATA should now be set to paths on your computer.
+
+  If they are not what you prefer, you should changed them now.  As instructed in previous section.
+  One reason to change the APPDIR path is if you are using a friend's computer as an emergency to regenerate keys, and prove they were yours.  And your friend already has his own paths setup.
+
+APPDATA =: 'new value'
+
+  Advancing to next section will save these settings to your computer (in the APPDIR folder, and in J's main folder for future exectution of this lab) 
+)
+APPDIR
+APPDATA
+
+NB. =========================================================
+Lab Section Settings saved
+  settings are now being saved.  
+
+  You may change them at any time by rerunning this lab.
+)
+pathcreate each APPDIR;APPDATA
+(3!:1 APPDIR;APPDATA) fwrite    (1!:43 ''),'/', 'nbpath.settings'
+(3!:1 APPDIR;APPDATA) fwrite     APPDIR, 'nbpath.settings' 
+
+NB. =========================================================
+Lab Chapter Generating Keys
+NB. =========================================================
+Lab Section Intro
+  The keys that will be generated are for use with the Rabin WIlliams signature protocol.  The RSA protocol is more well known and has a practically identical private key.
+
+  The keys will be generated deterministically throuh a password.  This allows you to recreate the same key with the same password, and is the best way to transfer keys to another computer.
+  
+  In order to keep the password short and memorable, while preventing anyone else from accidentally generating the same one,
+
+A FEW RULES:
+ You will be asked to make a list of favorite numbers.  These will be kept on your computer (encrypted).  
+ The password format is any text, but you are encouraged to add another list of (or at least one) trailing numbers to it.
+   Example passwords:
+   'SONY: password 1 1 1 1'
+   'hunter2 1234 3456 3'
+
+ The password combined with your favorite numbers will create unique keys.  If you use both common password and common favorite numbers then someone else may guess your keys.  This would inconvenience you.
+
+)
+PREPARE
+'APPDIR APPDATA' =: 3!:2 fread    (jpath '~install'),'/', 'nbpath.settings'
+1!:44 APPDIR
+load 'factoring.ijs'
+load 'zutils.ijs'
+favorites =: 1 2 3
+load 'openssl.ijs'
+PREPARE
+s256 listhash 'A simple phrase'
+
+10{. s256 listhash 'A simple phrase'
+
+(>: i.10){ s256 listhash 'A simple phrase'
+
+
+NB. =========================================================
+Lab Section Favorite Numbers
+
+  We will now generate a list of 11 byte sized numbers.  This list essentially acts as a salt for your key generation.  You may replace the list with any other smaller or longer list if you choose.
+
+  The recommended way to create this list is to use a phrase that is long but easy to remember and type, followed by a number between 0 and 53 followed optionally by any other numbers.
+
+  You will not need to enter this password often.  The only time it is required is if you want to generate a key on a new or different computer.
+
+  You have the opportunity to instead create a list of numbers that is short enough to retype and save that on a piece of paper that is safe but does not reveal what it is for.  You may pick genuinely memorable numbers to you.  Old phone numbers credit cards and dates can be a source of numbers, though these might be compromised by your identity.
+
+  The following is a list of random numbers generated based on current time to the milisecond.  that you may copy them to use in your favorites list, but this is only recommended if you will write down these numbers for safekeeping.
+)
+
+10 20 $ (s512, s256) listhash  ": 6!:0 ''
+
+NB. =========================================================
+Lab Section
+  A window will pop up asking you to enter a password followed by a number. (next section) 
+
+If you get an error, you may try again by placing the cursor on the line of code below and hitting enter (twice).
+
+)
+  splitpw 'A valid phrase 42 1 2 3'
+  splitpw 'St1l1 va71d 42 '
+  splitpw 'St 1 11  va71d 42 '
+
+  
+NB. =========================================================
+Lab Section
+  Enter a list of favorite numbers in popup.  If you inspect the favorites variable (by typing it) it will show up in this session's log file (.ijx) and is less secure against someone with full access to your computer.
+
+  So, if you inspect favorites (by entering that word), you should regenerate them (or advanced delete .ijx files in your temp folder shown below)
+)
+jpath '~temp'
+favorites =:  (((i.12) + 0&{::) { [: s512 listhash [: , ": &>) splitpw wd 'mb input text "favorites key generator" "word(s) followed by space and number(s) below 53" '
+
+NB. =========================================================
+Lab Section System key
+  2 keys will be generated.  A system and personal key.  A system key allows your computer to identify itself.  It is used for more trivial authentication such as logging into a service.  The personal key is more guarded and used to confirm that you are the person.  It is used for spending or making account changes.
+  
+  Public cryptography allows you to use services without any other party ever knowing/storing private information (private keys or passwords).
+
+  First a demonstration of the security of short passwords
+)
+PREPARE
+load 'openssl.ijs'
+PREPARE
+
+  parsepw 'a 1'
+
+  parsepw 'a 2'
+
+  a. {~ b64hash s256 parsepwC 24 'a 1'
+NB. =========================================================
+Lab Section
+  The above shows that even simple passwords with minor differences generate complex keys unrelated to each other.  An attacker would need to find out your favorite numbers, and break the SHA512 algorithm to know the output of your password function.  No information about your favorite numbers can possibly be deduced from your computed password.
+
+  You are now making your system key.  Use a password that is AT LEAST 4 letters, followed by at least 2 digits of numbers.  
+
+  It should be easy to remember but unlikely that someone else would use the same password, or be able to guess it from knowing you.
+
+  The more common you think your favorite numbers (passphrase) might be, the longer and more unusual you should make your password.
+
+  Public information about your key is displayed when done (as a cue), but the key bits are cut off.
+
+  THIS MAY TAKE A MINUTE OR SO.
+)
+  syskey =: 894 gencompressedN 256x #. parsepw wd 'mb input text "enter password" "password: " '
+
+NB. =========================================================
+Lab Section 
+  Here is a final test the key.  If no messages are produced, then the key is good.
+
+  If message 'Fixing... but more secure to regenerate', it is probably ok not to.
+
+  syskey holds private information about your key.  It is not displayed to ensure privacy, and to not leave a trace of the key generation process.
+
+  THIS WILL TAKE LESS TIME THAN Previous key generation.
+)
+
+syskey =: 894 FixCompressedN^:_ syskey
+
+
+
+NB. =========================================================
+Lab Section Personal key
+  For your personal key, you may use the same password as the system key.  Or you may use a small variation.  
+  If you made your system key password short, use a longer variation here.
+
+Your personal key is 1214 bits long compared to the 894 bits of the system key.
+
+THIS WILL TAKE A BIT LONGER THAN Previous key generation.
+)
+
+perskey =: 1214 gencompressedN 256x #. parsepw wd 'mb input text "enter password" "password: " '
+
+NB. =========================================================
+Lab Section
+  Here is a final test the key.  If no messages are produced, then the key is good.
+
+  If message 'Fixing... but more secure to regenerate', it is probably ok not to.
+
+  THIS WILL TAKE LESS TIME THAN Previous key generation.
+)
+perskey =: 1214 FixCompressedN^:_ perskey
+
+NB. =========================================================
+
+
+NB. =========================================================
+Lab Section  Saving keys
+ The favorites and keys will now be saved to disk.  We are encrypting them further to prevent snooping on your disk, or loss of your computer.
+
+ A logon and "spending" password will be needed.
+
+ Favorites will be encrypted with the spending password.  Decrypted favorites are only needed for the key generation at the start of this chapter.  Though the encrypted favorites can be used as is or transformed through any other list of favorites by decrypting with any (wrong) password.  The encryption method being used always returns an answer.  Only the right favorites will regenerate your keys as you did earlier.
+
+ Your personal key will be encrypted with the spending password.
+
+ Your system key and personal key (double in the case of the latter) will be encrypted with the logon password
+
+ You must have at least a slight variation in your logon and spending passwords.  These passwords may be reset "easily" at any time on your own computer (chapter later in this lab).  So if you are certain that no one will access your computer for now and no malware will infect it for now, then a minor variation between passwords is ok.  Otherwise, if one password is compromised, the other might be easily guessed.
+
+
+)
+
+,. SPENDING=:;@:(rollpad@:#22 b.each<)each favorites;  }. PERSKEY =: 256#.inv each;/ RWdparams 2{.perskey[521 initRND s512 bighash wd'mb input text "enter password" "spending password: " '
+
+NB. =========================================================
+Lab Section
+The logon key encrypts both the personal and system key.  The personal key was encrypted once already in last section.
+
+It is important that this LOGON KEY BE DIFFERENT.
+
+the output can be shown on screen because it is encrypted.
+)
+
+,. LOGON=:;@:(rollpad@:#22 b.each<)each }. SYSKEY =: (256#.inv each ;/ RWdparams 2{. syskey), 1 }.SPENDING[521 initRND s512 bighash wd'mb input text "enter password" "spending password: " '
+pathcreate APPDATA , 'keys'
+(3!:1 > {. SPENDING) fwrite APPDIR , 'favorites.settings'
+(3!:1 LOGON) fwrite APPDATA , 'keys/keys.settings'
+NB. =========================================================
+Lab Section Sending public keys by email
+  Your public keys can be sent to a member, who preferably knows you, by email, so that you may be included in the society.
+
+  You should also include a vague description of your name and location, and a precise email address.
+
+)
+PUBKEYS =:  {&a. each 256 #.inv each {: each perskey ,~&< syskey
+
+NAME =: ''
+
+NB. =========================================================
+Lab Section Name
+  Fill in your name inside the quotes above.
+
+  You are encouraged to use a single letter initial for your first or last name.  Such as:
+  NAME =: 'FirstName L.'
+)
+LOCATION =: ''
+
+NB. =========================================================
+Lab Section Location
+  Enter your location, Country Region City.  If there are multiple, separate them with ; (careful with quotes )  Examples:
+ 
+  LOCATION =: 'Toronto ON Canada'
+  LOCATION =: 'USA Northern Georgia';'Paris France'
+  LOCATION =: 'Cote D''Ivoire';'Berlin, Allemagne'
+
+  It doesn't need to be precise.
+)
+EMAIL =: ''
+
+NB. =========================================================
+Lab Section EMAIL
+  Use an email that may receive spam.  Ideally, Do not use an email that contains a ', but example:
+
+  EMAIL =: 'O''connor.G@natb.it'
+
+  A pause in loading this section is due to loading (and possibly downloading) compression library
+)
+PREPARE
+require '~addons/arc/zlib/zlib.ijs'
+install_jzlib_^:NOZLIB_jzlib_ ''
+load '~addons/arc/zlib/zlib.ijs'
+PREPARE
+wd 'clipcopy *', tobase64 zlib_compress 3!:1 EMAIL ; PUBKEYS , NAME;<LOCATION
+,. 3!:2 zlib_uncompress frombase64 wdclippaste '' 
+
+NB. =========================================================
+Lab Section
+  The above copied your public information to clipboard.  Create an email to a society member you preferably know, paste data there, but do not send the email until we verify that your account is correct.
+
+  Printed below is your name, email and location.  If any of these are blank, you should reset them, and then rerun the wd'clipcopy *'.... line above.
+)
+NAME ; EMAIL;< LOCATION
+
+
+NB. =========================================================
+Lab Chapter Verifying Passwords
+NB. =========================================================
+
+NB. =========================================================
+Lab Section Verifying Passwords
+  This Chapter assumes that you have just generated keys in this session, and so variables holding your keys are still in memory.
+)
+
+NB. =========================================================
+Lab Section system password
+  Confirming your password by generating the key again.
+
+  If you see wrong password, and you would like to keep the new one, enter the expression 
+
+syskey =: tempkey
+
+THIS WILL TAKE THE SAME MINUTE OR SO.
+)
+
+syskey  'wrong password'"_`('matched previous... congratulations.'"_)@.-: tempkey =: 894  gencompressedN 256x #. parsepw wd 'mb input text "enter password" "password: " '
+
+
+Lab Section personal password
+  Confirming your password by generating the key again.  (Helping you memorize through annoyance)
+
+  If you see wrong password, and you would like to keep the new one, enter the expression 
+
+perskey =: tempkey
+
+THIS WILL TAKE THE SAME MINUTE OR SO.
+)
+
+
+perskey  'wrong password'"_`('matched previous... congratulations.'"_)@.-: tempkey =: 1214 gencompressedN 256x #. parsepw wd 'mb input text "enter password" "password: " '
+
+NB. =========================================================
+Lab Section
+  Spending key password test
+)
+
+
+ SPENDING 'wrong password'"_`('matched previous... congratulations.'"_)@.-: ;@:(rollpad@:#22 b.each<)each favorites;256#.inv each;/ }.RWdparams 2{.perskey[521 initRND s512 bighash wd'mb input text "enter password" "spending password: " '
+
+NB. =========================================================
+Lab Section
+  logon key password test
+)
+
+ LOGON 'wrong password'"_`('matched previous... congratulations.'"_)@.-: ;@:(rollpad@:#22 b.each<)each (256#.inv each ;/ }.RWdparams 2{. syskey), 1 }.SPENDING[521 initRND s512 bighash wd'mb input text "enter password" "spending password: " '
+
+
+NB. =========================================================
+Lab Chapter Verifying and loading info from Disk
+NB. =========================================================
+
+NB. =========================================================
+Lab Section
+ This chapter relies on the first chapter being completed, and keys having been generated
+
+ Your logon password please.  Gathering system key params
+)
+ 'APPDIR APPDATA' =: 3!:2 fread  (1!:43 ''),'/', 'nbpath.settings'
+FAVORITES =: 3!:2 fread APPDIR , 'favorites.settings'
+KEYS =: 3!:2 fread APPDATA , 'keys/keys.settings'
+
+ SYSP =: (] ,~ [: */ (0 1&{)) > 256x #. each 5{. DKEYS =: ;@:(rollpad@:#22 b.each<)each KEYS  [521 initRND s512 bighash  wd'mb input text "enter password" "logon password: " '
+ 
+NB. =========================================================
+Lab Section
+ Your spending password please.  Gathering personal key params
+)
+PERSP=:(],~[:*/(0 1&{))>256x#.each }. ;@:(rollpad@:#22 b.each<)each((    0#~#FAVORITES);5}.DKEYS)[521 initRND s512 bighash wd'mb input text "enter password" "Spending password: " '
+
+NB. =========================================================
+Lab Section Signatures
+  Public key cryptography allows you to prove the authorship of messages.  When you sign a message, only the person who knows your private key (you) could have created the signature.
+
+  If you provided the right passwords the last line below should result in 12345678901234
+)
+SYSP Sign x: 12345678901234
+
+({. SYSP) Verify SYSP Sign x: 12345678901234
+
+PERSP Sign x: 12345678901234
+
+({. PERSP) Verify PERSP Sign x: 12345678901234
+
+
+
+NB. =========================================================
+Lab Section Encryption
+  Encryption allows you to encode using the receiver's public key.  Only they can decrypt it.
+
+  Padding is necessary to safely encrypt small numbers (messages).  The pad should be at least half the length of the key size
+
+  The best use of public key encryption is for signing and sending passwords and other keys for faster encryption.
+)
+   ({. SYSP) RCcrypt 500 Pad 1
+
+   500 UnPad (1 2 { SYSP) RCdecrypt ({. SYSP)  RCcrypt 500 Pad 1234567
+
+   {&a. 256x #. inv 500 UnPad (1 2 { SYSP) RCdecrypt ({. SYSP) RCcrypt 500 Pad  256x #. a. i. 'The quick brown fox'
+
+
+
+NB. =========================================================
+Lab Section
+
+)
