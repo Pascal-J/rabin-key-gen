@@ -305,7 +305,7 @@ expandpw =:   (favorites ,~ [: ; 256 #.inv each [)  ([ (, ,) (22 b.)"0 1 , ])  (
 (0&".@:>@:{: (256| +/)@:((n $ [: u listhash ":@:expandpw) ,  (5 ,n) $ expandpw) ;@:}:) ;: y
 )
 parsepw =:  s256 parsepwC 48
-splitpw =:  (;@:}: ;~  a:&+^:(= 0:)@:(0&".)@:>@:{:)@:;: :: ('needs a trailing number greater than 0'"_)
+splitpw =:  (;@:}: ;~  a:&+^:(-: 0:)@:(0&".)@:>@:{:)@:;: :: ('needs a trailing number greater than 0'"_)
 itemsbetween =: 2 : '((m >:@i.~ y) , n <:@i.~ y) (takerange { ]) y'
 
 NB. secure RNG depends on whether numbers are published or discoverable.  Returned number range should be 30 bits less than period for basic security, but there are ways of guessing seed range.
