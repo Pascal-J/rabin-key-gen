@@ -304,7 +304,7 @@ expandpw =:   (favorites ,~ [: ; 256 #.inv each [)  ([ (, ,) (22 b.)"0 1 , ])  (
 'enter at least one space, a leading non number, and use trailing number(s)' assert 1<# ;: y
 (0&".@:>@:{: (256| +/)@:((n $ [: u listhash ":@:expandpw) ,  (5 ,n) $ expandpw) ;@:}:) ;: y
 )
-parsepw =:  s256 parsepwC 48
+parsepw =:  s256 parsepwC 61
 splitpw =:  (;@:}: ;~  a:&+^:(-: 0:)@:(0&".)@:>@:{:)@:;: :: ('needs a trailing number greater than 0'"_)
 itemsbetween =: 2 : '((m >:@i.~ y) , n <:@i.~ y) (takerange { ]) y'
 
@@ -312,7 +312,7 @@ NB. secure RNG depends on whether numbers are published or discoverable.  Return
 NB. adding to gbflip allows a period increase of 2^55.
 lcG =: 2 : '( ] | n assign (1-~2x^m) | 48271x * 3 : n)"0'  NB. generates a random generator verb using a var ('seed') as n.  m should be a mersenne prime exp, 31 61 89 107 127 521 607
 NB.lcG4 =: 2 : ' ] |  n (][ [ assign ([: +/@:RawRnd31 2:) + ]) 48271x  ((1-~2x^m) |  *) 3 : n' NB. variation that sets seed different than return val.
-lcG4 =: 2 : ' ] |  n (][ [ assign ( {.@RawRnd31@1:) + ]) 48271x  ((1-~2x^m) |  *) 3 : n' NB. variation that sets seed different than return val.
+lcG4 =: 2 : ' ] |  n (][ [ assign ( {.@RawRnd31@1:) + ]) (n~ + 48271x)  ((1-~2x^m) |  *) 3 : n' NB. variation that sets seed different than return val.
 lcG31 =: 1 : '(]| m (][ [ assign ( {.@RawRnd31@1:) + ]) 48271x  (2147483647 |  *) 3 : m)"0'
 lcG61 =: 1 : ']| m (][ [ assign ( {.@RawRnd31@1:) + ]) 48271x  (( x: inv ^:IF64 2305843009213693951x) |  *) 3 : m'
 
@@ -324,8 +324,9 @@ initRND =:  3 : 0
 NB.roll =: 'seed' lcG31
 NB.seed =: y + */ RawRnd31 2 [ 9!:1  y [ (9!:43) 1
 : 
+seed =: (2 ^ x-3) + y + */ x:^:(-. IF64) RawRnd31 2 [ 9!:1  (2x^31) | y [ (9!:43) 1
 select. x case. 31 do. roll =: 'seed' lcG31"0 case. 61 do.  roll =: 'seed' lcG61"0 case. do. roll =: x lcG4 'seed'"0 end.
-seed =: y + */ x:^:(-. IF64) RawRnd31 2 [ 9!:1  (2x^31) | y [ (9!:43) 1
+seed
 ) 
 rollbits =: 3 : 'roll 2x ^ y'
 rollpad =: 3 : 'roll each y $ each 256'
@@ -353,7 +354,7 @@ bitsRndR =: 4 : 0 NB. x is seed y is bits
 xp =.  {.y
 x =. x: x
  x initRND~ s =.  xp ((],{:@:] ) {~   1 i.~ <)  31 61 89 107 127 521 607 1279 2203x
- rollbits y
+ (bitsRnd + rollbits) y
 )
 
 lcG64 =: 6148914537289504899x&((x: inv^:IF64 9223371812008258273)  | *)
@@ -470,6 +471,20 @@ NB. will hang if you don't pass large extended numbers.ie 1e23 will hang
 d =. 3 invmod~ */ <: p,q
 
 d&((p*q) | *) 
+)
+NB. intentionally slow lCG gen
+lcGPrime =: 1 : 0 NB. Gens a prime lcg based on seed and bits
+'s bits' =. m
+p=. 11 + 12 * s bitsRndR bits
+while. -.@MillerRabinQW p do. p =. 11 + 12 * rollbits bits end.
+NB. lcG4 =: 2 : ' ] |  n (][ [ assign ( {.@RawRnd31@1:) + ]) (n~ + 48271x)  ((1-~2x^m) |  *) 3 : n'
+roll =: (] | 'seed' (][ [ assign ( {.@RawRnd31@1:) + ]) (p|seed) (p|*) 3 : 'seed')"0
+)
+NB. slow to stop brute force guessing.
+Slowbytes =:  4 : 0 NB.y is numbytes # bytes (or range), x is passphrase in splitpw format
+'n p' =. splitpw y
+bits =. 129 + ^:> >: {: n
+(bits ,~ s512 bighash ; ": each x) lcGPrime x
 )
 getdn =: 3 : 0 NB. Just get d and n
 NB.'p q' =. genqpn4`genq@.(1=#) y 
@@ -715,5 +730,3 @@ NB.( (2&{.@:]) , [: |/\ *&(2&{) , ,&{: +/ .*  (2&{.@:]))/\@:(abl ,. m ,. ])
 [:{: cr1/@:(m ,. ])
 NB. n | [: {: 
 )
-
-
