@@ -10,7 +10,7 @@ NB. =========================================================
 Lab Section Intro
   This lab shows how to setup natbit and create encryption keys
 
-  can be run with: lab_jlab_ 'setupnb.ijt' (open a random lab to have lab verb loaded)
+  can be run with: lab_jlab_ jpath '~natbit/', 'setupnb.ijt' (open a random lab to have lab verb loaded)
 
   Chapters of this setup Lab are:
 
@@ -137,16 +137,21 @@ Lab Section Intro
 
   The keys will be generated deterministically throuh a password.  This allows you to recreate the same key with the same password, and is the best way to transfer keys to another computer.
   
+  At least 2 passwords are used, but Paranoia permits 4.
+    PASSWORD #1 will not be entered on a daily basis.  (only when transfering key to another computer).  PASSWORD #1 should be either long and memorable, or long and saved securely somehow.
+
   In order to keep the password short and memorable, while preventing anyone else from accidentally generating the same one,
 
 A FEW RULES:
- You will be asked to make a list of favorite numbers.  These will be kept on your computer (encrypted).  
- The password format is any text, but you are encouraged to add another list of (or at least one) trailing numbers to it.
-   Example passwords:
-   'SONY: password 1 1 1 1'
-   'hunter2 1234 3456 3'
+ PASSWORD#1 is used to generate what I call "favorite numbers".  Based on a more general password expansion encryption technique I developed.
+ The password format is any text, but as required with PASSWORD#2 (and 3 or 4) you are encouraged to add another list of (or at least one) trailing numbers to it.
+   Example PASSWORD#1 s :
+   'NAME verb some other name or thing, dateof birth, some fairly random but memorable phrase, list of (or one) memorable numbers'
+   'OLD credit card number you will remember to keep, genuinely random numbers that you will jot down, some personal words and numbers, what you will use for password #2'
 
- The password combined with your favorite numbers will create unique keys.  If you use both common password and common favorite numbers then someone else may guess your keys.  This would inconvenience you.
+ The password#2 combined with your password#1 will create unique encryption keys.  The 2 together must be unique to the planet .  Otherwise, this would inconvenience you.
+
+ It is ok if password#1 could be picked by another 1000 or so people in the world, but not (much) more.
 
 )
 PREPARE
@@ -168,9 +173,9 @@ s256 listhash 'A simple phrase'
 NB. =========================================================
 Lab Section Favorite Numbers
 
-  We will now generate a list of 11 byte sized numbers.  This list essentially acts as a salt for your key generation.  You may replace the list with any other smaller or longer list if you choose.
+  We will now generate a list of Favorite numbers through password #1.  This list essentially acts as a salt for your key generation.  You may replace the list with any other smaller or longer list if you choose.
 
-  The recommended way to create this list is to use a phrase that is long but easy to remember and type, followed by a number between 0 and 53 followed optionally by any other numbers.
+  The recommended way to create this list is to use a phrase that is long but easy to remember
 
   You will not need to enter this password often.  The only time it is required is if you want to generate a key on a new or different computer.
 
@@ -197,18 +202,21 @@ NB. =========================================================
 Lab Section
   Enter a list of favorite numbers in popup.  If you inspect the favorites variable (by typing it) it will show up in this session's log file (.ijx) and is less secure against someone with full access to your computer.
 
-  So, if you inspect favorites (by entering that word), you should regenerate them (or advanced delete .ijx files in your temp folder shown below)
+  An alternate generation format has been provided (commented with leading NB .) .  The alternate format should end with a number between 0 and 32 .
+
+  To use the alternate format, edit the line to remove the NB ., and then press enter twice.  If fewer people use the alternate format, then it might be safer.
  
   If you are following recommendations, THIS IS PASSWORD #1
 )
 jpath '~temp'
-favorites =:  (((i.12) + 0&{::) { [: s512 listhash [: , ": &>) splitpw wd 'mb input text "favorites key generator" "word(s) followed by space and number(s) below 53" '
+NB. favorites =:  (((i.32) + {:@:(0&{::)) { [: s512 listhash [: , ": &>) splitpw wd 'mb input text "favorites key generator" "word(s) followed by space and number(or last one) below 32" '
+favorites =: s512 listhash wd 'mb input text "favorites key generator" "A long password unlikely to be used by anyone else in the world" '
 
 NB. =========================================================
 Lab Section System key
-  2 keys will be generated.  A system and personal key.  A system key allows your computer to identify itself.  It is used for more trivial authentication such as logging into a service.  The personal key is more guarded and used to confirm that you are the person.  It is used for spending or making account changes.
+  2 keys will be generated.  A system and personal key.  A system key allows your computer to identify itself.  It is used for more trivial authentication such as logging into a service.  The personal key is more guarded and used to confirm that you are the person.  It is used for "important" spending or making account changes.
   
-  Public cryptography allows you to use services without any other party ever knowing/storing private information (private keys or passwords).
+  Public cryptography allows you to use services without any other party ever knowing/storing private information (private keys or passwords).  There is no username ever needed, only a single signin number, and so "signing in" can be done securely and automatically.
 
   First a demonstration of the security of short passwords
 )
@@ -223,15 +231,15 @@ PREPARE
   a. {~ b64hash s256 parsepwC 24 'a 1'
 NB. =========================================================
 Lab Section
-  The above shows that even simple passwords with minor differences generate complex keys unrelated to each other.  An attacker would need to find out your favorite numbers, and break the SHA512 algorithm to know the output of your password function.  No information about your favorite numbers can possibly be deduced from your computed password.
+  The above shows that even simple passwords with minor differences generate complex keys unrelated to each other.  An attacker would need to find out your favorite numbers, and break the SHA512 algorithm to know the output of your password function.  No information about your favorite numbers can possibly be deduced from your computed password, and your favorite numbers will be erased (unless you choose to save them) when you close this program
 
-  You are now making your system key.  Use a password that is AT LEAST 4 letters, followed by at least 2 digits of numbers.  
+  You are now making your system key.  Use a password that is AT LEAST 4 (preferably at least 6) letters, followed by at least 2 digits of numbers.  
 
-  It should be easy to remember but unlikely that someone else would use the same password, or be able to guess it from knowing you.
+  It should be easy to remember, but hard for someone (even if they know you) to be able to guess it.  (If a short password, avoid dictionary or common words)
 
-  The more common you think your favorite numbers (passphrase) might be, the longer and more unusual you should make your password.
+  The more common you think your favorite numbers (passphrase) might be, the longer and more unusual you should make your password#2.
 
-  Public information about your key is displayed when done (as a cue), but the key bits are cut off.
+  The display will print some Public information about your key is displayed when done (as a cue that it is done), but some bits are cut off.
 
   THIS MAY TAKE A MINUTE OR SO. PASSWORD #2
 )
@@ -246,20 +254,22 @@ Lab Section
   syskey holds private information about your key.  It is not displayed to ensure privacy, and to not leave a trace of the key generation process.
 
   THIS WILL TAKE LESS TIME THAN Previous key generation.
+
+  The code line has been commented out because it is not really necessary to do this test.
 )
 
-syskey =: 894 FixCompressedN^:_ syskey
+NB. syskey =: 894 FixCompressedN^:_ syskey
 
 
 
 NB. =========================================================
 Lab Section Personal key
   For your personal key, you may use the same password as the system key.  Or you may use a small variation.  
-  If you made your system key password short, use a longer variation here.
+  If you made your system key password short, use a longer variation here.  A variation is only recommended if the password#2 is short.
 
 Your personal key is 1214 bits long compared to the 894 bits of the system key.
 
-THIS WILL TAKE A BIT LONGER THAN Previous key generation.  PASSWORD #2
+THIS WILL TAKE A BIT LONGER THAN Previous key generation.  PASSWORD #2 or PASSWORD#2b if #2 is short.
 )
 
 perskey =: 1214 gencompressedN 256x #. parsepw wd 'mb input text "enter password" "password: " '
@@ -271,44 +281,61 @@ Lab Section
   If message 'Fixing... but more secure to regenerate', it is probably ok not to.
 
   THIS WILL TAKE LESS TIME THAN Previous key generation.
+
+  The code line has been commented out because it is not really necessary to do this test.
 )
-perskey =: 1214 FixCompressedN^:_ perskey
+NB. perskey =: 1214 FixCompressedN^:_ perskey
 
 NB. =========================================================
 
 
 NB. =========================================================
 Lab Section  Saving keys
- The favorites and keys will now be saved to disk.  We are encrypting them further to prevent snooping on your disk, or loss of your computer.
+ Your keys will now be saved to disk.  We are encrypting them further to prevent snooping on your disk, or loss of your computer.
 
- A logon and "spending" password will be needed.
+ A commented line also enables you to lazily save your "favorites" (password salt) to disk though you may save the password that generated them in some other way, or ideally can remember it within a few attempts.
 
- Favorites will be encrypted with the spending password.  Decrypted favorites are only needed for the key generation at the start of this chapter.  Though the encrypted favorites can be used as is or transformed through any other list of favorites by decrypting with any (wrong) password.  The encryption method being used always returns an answer.  Only the right favorites will regenerate your keys as you did earlier.
+ The decision to save Favorites can cause an extra attack vector if your computer has unauthorized access.  On the other hand, it can provide a backup in case you forget PASSWORD #1
 
- Your personal key will be encrypted with the spending password.
+ A logon and "spending" password will be needed.  
 
- Your system key and personal key (double in the case of the latter) will be encrypted with the logon password
+ Your personal key will be encrypted with the spending password. (password #3, or optionally same as password #2)
 
- You must have at least a slight variation in your logon and spending passwords.  These passwords may be reset "easily" at any time on your own computer (chapter later in this lab).  So if you are certain that no one will access your computer for now and no malware will infect it for now, then a minor variation between passwords is ok.  Otherwise, if one password is compromised, the other might be easily guessed.
+ Your system key and personal key (double encryption of the latter) will be encrypted with the logon password (password #4, or optionally same as password #2)
 
+ These passwords may be reset "easily" at any time on your own computer (chapter later in this lab).  So if you are certain that no one will access your computer for now and no malware will infect it for now, then reusing password #2 is reasonably safe.
+
+ One reason to have passwords #3 and #4 different than password#2 is if you allow other people to access your computer, and you may allow them to sign your computer onto services, or otherwise want to protect yourself from tampering.
+
+ A slow function is being used to encrypt your data on disk so that it will be harder for an attacker to guess. You may add an extra number to the end of your passphrase to change how fast or slow this encryption process is.  There is not much reason to make the last number greater than 400-600.  If the encryption pauses more than half a second before completing, you should probably prefer to lower the last number until it takes under a quarter of a second (noticeable but brief pause) or so.
 
 PASSWORD #3
 )
 
-,. SPENDING=:;@:(rollpad@:#22 b.each<)each favorites;  }. PERSKEY =: 256#.inv each;/ RWdparams 2{.perskey[521 initRND s512 bighash wd'mb input text "enter password" "spending password: " '
+NB. IF THIS OPERATION TAKES A LONG TIME, SEE LAST PARAGRAPH OF ABOVE TEXT.  yOU MAY WANT TO SHORTEN (or add) LAST NUMBER IN YOUR PASSPHRASE TO BE BELOW 300.
+
+,. SPENDING=:;@:(rollpad@:#22 b.each<)each  }. PERSKEY =: 256#.inv each;/ RWdparams 2{.perskey[1 Slowbytes  ;: inv@:(}: , 100&+&.".each@:{:) ;: wd'mb input text "enter password" "spending password: " '
+
+NB.  (APPDIR , 'favorites.settings')fwrite~  3!:1 > ;@:(rollpad@:#22 b.each<)each <favorites [ 1 Slowbytes  wd'mb input text "optionally save favorites to disk" "unique password (with trailing numbers): " '
+
+'uncomment and run the above to save favorites (not necessary)'
 
 NB. =========================================================
 Lab Section
 The logon key encrypts both the personal and system key.  The personal key was encrypted once already in last section.
 
-It is important that this LOGON KEY BE DIFFERENT.  PASSWORD #4
+The rawpassword is modified, and so may be the same as PASSWORD 2.  But the main reason to have password #3 that is different is to also have password#4 that is different.
+
+PASSWORD #4
 
 the output can be shown on screen because it is encrypted.
 )
 
-,. LOGON=:;@:(rollpad@:#22 b.each<)each }. SYSKEY =: (256#.inv each ;/ RWdparams 2{. syskey), 1 }.SPENDING[521 initRND s512 bighash wd'mb input text "enter password" "spending password: " '
+,. LOGON=:;@:(rollpad@:#22 b.each<)each }. SYSKEY =: (256#.inv each ;/ RWdparams 2{. syskey), SPENDING[1 Slowbytes wd'mb input text "enter password" "logon password: " '
 pathcreate APPDATA , 'keys'
-(3!:1 > {. SPENDING) fwrite APPDIR , 'favorites.settings'
+
+
+
 (3!:1 LOGON) fwrite APPDATA , 'keys/keys.settings'
 NB. =========================================================
 Lab Section Sending public keys by email
@@ -379,6 +406,8 @@ NB. =========================================================
 NB. =========================================================
 Lab Section Verifying Passwords
   This Chapter assumes that you have just generated keys in this session, and so variables holding your keys are still in memory.
+
+  Commands have been commented out so that you may quickly skip this verification.
 )
 
 NB. =========================================================
@@ -392,7 +421,7 @@ syskey =: tempkey
 THIS WILL TAKE THE SAME MINUTE OR SO.  PASSWORD #2
 )
 
-syskey  'wrong password'"_`('matched previous... congratulations.'"_)@.-: tempkey =: 894  gencompressedN 256x #. parsepw wd 'mb input text "enter password" "password: " '
+NB. syskey  'wrong password'"_`('matched previous... congratulations.'"_)@.-: tempkey =: 894  gencompressedN 256x #. parsepw wd 'mb input text "enter password" "password: " '
 
 
 Lab Section personal password
@@ -406,7 +435,7 @@ THIS WILL TAKE THE SAME MINUTE OR SO.  PASSWORD #2
 )
 
 
-perskey  'wrong password'"_`('matched previous... congratulations.'"_)@.-: tempkey =: 1214 gencompressedN 256x #. parsepw wd 'mb input text "enter password" "password: " '
+NB. perskey  'wrong password'"_`('matched previous... congratulations.'"_)@.-: tempkey =: 1214 gencompressedN 256x #. parsepw wd 'mb input text "enter password" "password: " '
 
 NB. =========================================================
 Lab Section
@@ -414,14 +443,14 @@ Lab Section
 )
 
 
- SPENDING 'wrong password'"_`('matched previous... congratulations.'"_)@.-: ;@:(rollpad@:#22 b.each<)each favorites;256#.inv each;/ }.RWdparams 2{.perskey[521 initRND s512 bighash wd'mb input text "enter password" "spending password: " '
+NB.  SPENDING 'wrong password'"_`('matched previous... congratulations.'"_)@.-:  ;@:(rollpad@:#22 b.each<)each }. 256#.inv each;/ RWdparams 2{.perskey[1 Slowbytes  ;: inv@:(}: , 100&+&.".each@:{:) ;: wd'mb input text "enter password" "spending password: " '
 
 NB. =========================================================
 Lab Section
   logon key password test.  PASSWORD #4
 )
 
- LOGON 'wrong password'"_`('matched previous... congratulations.'"_)@.-: ;@:(rollpad@:#22 b.each<)each (256#.inv each ;/ }.RWdparams 2{. syskey), 1 }.SPENDING[521 initRND s512 bighash wd'mb input text "enter password" "Logon password: " '
+NB.  LOGON 'wrong password'"_`('matched previous... congratulations.'"_)@.-: }. (256#.inv each ;/ RWdparams 2{. syskey), SPENDING[1 Slowbytes wd'mb input text "enter password" "Logon password: " '
 
 
 NB. =========================================================
@@ -430,21 +459,24 @@ NB. =========================================================
 
 NB. =========================================================
 Lab Section
- This chapter relies on the first chapter being completed, and keys having been generated
+ This chapter relies on the first chapter being completed, and keys having been generated and saved to disk (up to chapter 3).
 
  Your logon password please.  Gathering system key params.  PASSWORD #4
 )
+PREPARE
+NB. FAVORITES =: 3!:2 fread APPDIR , 'favorites.settings'
+PREPARE
  'APPDIR APPDATA' =: 3!:2 fread  (1!:43 ''),'/', 'nbpath.settings'
-FAVORITES =: 3!:2 fread APPDIR , 'favorites.settings'
+
 KEYS =: 3!:2 fread APPDATA , 'keys/keys.settings'
 
- SYSP =: (] ,~ [: */ (0 1&{)) > 256x #. each 5{. DKEYS =: ;@:(rollpad@:#22 b.each<)each KEYS  [521 initRND s512 bighash  wd'mb input text "enter password" "logon password: " '
+ SYSP =: (] ,~ [: */ (0 1&{)) > 256x #. each 5{. DKEYS =: ;@:(rollpad@:#22 b.each<)each KEYS  [1 Slowbytes  wd'mb input text "enter password" "logon password: " '
  
 NB. =========================================================
 Lab Section
  Your spending password please.  Gathering personal key params  PASSWORD #3
 )
-PERSP=:(],~[:*/(0 1&{))>256x#.each }. ;@:(rollpad@:#22 b.each<)each((    0#~#FAVORITES);5}.DKEYS)[521 initRND s512 bighash wd'mb input text "enter password" "Spending password: " '
+PERSP=:(],~[:*/(0 1&{))>256x#.each ;@:(rollpad@:#22 b.each<)each(5}.DKEYS)[1 Slowbytes   ;: inv@:(}: , 100&+&.".each@:{:);: wd'mb input text "enter password" "Spending password: " '
 
 NB. =========================================================
 Lab Section Signatures
@@ -468,17 +500,17 @@ Lab Section Encryption
 
   Padding is necessary to safely encrypt small numbers (messages).  The pad should be at least half the length of the key size
 
-  The best use of public key encryption is for signing and sending passwords and other keys for faster encryption.
+  The best use of public key encryption is for signing and sending (short) passwords and other keys for faster encryption.
 )
    ({. SYSP) RCcrypt 500 Pad 1
 
    500 UnPad (1 2 { SYSP) RCdecrypt ({. SYSP)  RCcrypt 500 Pad 1234567
 
-   {&a. 256x #. inv 500 UnPad (1 2 { SYSP) RCdecrypt ({. SYSP) RCcrypt 500 Pad  256x #. a. i. 'The quick brown fox'
+   {&a. 256x #. inv 500 UnPad (1 2 { PERSP) RCdecrypt ({. PERSP) RCcrypt 500 Pad  256x #. a. i. 'Encryption-Decryption cycle successful: The quick brown fox'
 
 
 
 NB. =========================================================
 Lab Section
-  Done.  Thank you.  If you generated clipboard data for emailing to join society, and these tests passed, then you may go ahead and send email.
+  Done.  Thank you.  If you generated clipboard data for emailing to join society, and these tests passed, then you may go ahead and send the email to one who will add you to a society.
 )
