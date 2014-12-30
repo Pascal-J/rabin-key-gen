@@ -304,7 +304,7 @@ expandpw =:   (favorites ,~ [: ; 256 #.inv each [)  ([ (, ,) (22 b.)"0 1 , ])  (
 'enter at least one space, a leading non number, and use trailing number(s)' assert 1<# ;: y
 (0&".@:>@:{: (256| +/)@:((n $ [: u listhash ":@:expandpw) ,  (5 ,n) $ expandpw) ;@:}:) ;: y
 )
-parsepw =:  s256 parsepwC 61
+parsepw =:  s512 parsepwC 61
 splitpw =:  (;@:}: ;~  a:&+^:(-: 0:)@:(0&".)@:>@:{:)@:;: :: ('needs a trailing number greater than 0'"_)
 itemsbetween =: 2 : '((m >:@i.~ y) , n <:@i.~ y) (takerange { ]) y'
 
@@ -440,9 +440,9 @@ FixCompressedN =: 4 : 0
 'nb pad' =. 2 {. x , 17x
 'p q n' =. y
 n =. x decodeN n
-if. -. 30 MillerRabin p do. p=. p+8 
+if. -. 5 MillerRabin p do. p=. p+8 
 pD 'Fixing... p but more secure to regenerate' while. -.@MillerRabinQW p do. p =. p+8 end. end.
-if. -. 30 MillerRabin q do. p=. q+8 
+if. -. 5 MillerRabin q do. p=. q+8 
 pD 'Fixing... q but more secure to regenerate' while. -.@MillerRabinQW q do. q =. q+8 end. end.
 'key was unfixable.  Must Regenerate with different password.' assert (2x ^ nb) > b =. p*q 
 aa=.#.  a=. x: (0 #~ nb - a),~ 1 #~ a=. (nb <.@% 2) - pad

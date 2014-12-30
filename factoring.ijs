@@ -46,6 +46,7 @@ MillerRabinQW=:(3 : 0) " 0 NB. fails but fast.
  if. (0 = [: +./ 5 7&|) y do. 0 return. end.
  e=. huo  y-1
  if.   (1,<:y) -.@e.~ c=. 341550071728321x y&|@^ {:e do. NB.0 return. end.
+NB.if.   (1,<:y) -.@e.~ c=. 3825123056546413051x y&|@^ {:e do. NB.0 return. end.
  if.  (1,<:y) ([: -. +./@:e.~) c y&|@^ 2 ^ >:i.<:#e do. 0 return. end. end.
  1
 )

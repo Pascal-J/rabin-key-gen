@@ -258,7 +258,7 @@ Lab Section
   The code line has been commented out because it is not really necessary to do this test.
 )
 
-NB. syskey =: 894 FixCompressedN^:_ syskey
+ syskey =: 894 FixCompressedN^:_ syskey
 
 
 
@@ -284,7 +284,7 @@ Lab Section
 
   The code line has been commented out because it is not really necessary to do this test.
 )
-NB. perskey =: 1214 FixCompressedN^:_ perskey
+ perskey =: 1214 FixCompressedN^:_ perskey
 
 NB. =========================================================
 
