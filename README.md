@@ -23,7 +23,7 @@ lab_jlab_ jpath '~/natbit/setupnb.ijt'
 
 This is a process to generate keys for use in the Rabin Williams (or RSA with small modification) public cyrptosystem.
 
-It uses an interactive J lab session for portability accross platforms (64 and 32 bit desktops and android) and visibility and verifiability that the key is generated through function paths that you can verify.  
+It uses an interactive J lab session for portability accross platforms (64 and 32 bit desktops and android) and visibility and verifiability that the key is generated through function paths that you can verify.  It is open source, and each executed line may be examined afterwards.
 
 The keys are generated deterministically such that the same key may be generated on other computers without transfering any information through a network.  Significant entropy is created to ensure the generated key will be unique for 10s of billions of people, even with short memorable passphrases being used.
 
