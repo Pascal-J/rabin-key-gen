@@ -102,7 +102,12 @@ if. r do.
 end.
 res
 )
-
+NB. not exact spec.  repeats key with $ instead of 0 pad.
+NB. x is key y is message.
+hmac =: 1 : 0  NB. constant blocksize 64. u is hashfunction that produces binary
+ NB. dumb: ] ([: u {.@:] , [: u hexhash [ ,~ {:@:])  256x afd@:#. (92 54) (22 b.)/ 64 $ listhash [: u hexhash^:(64 > #) [
+] ([: u {.@:] , [: u [ ,~ {:@:])  256x afd@:#. (92 54) (22 b.)/ 64 $ listhash [: u^:(64 > #) [
+)
 BNctxnew =: ' BN_CTX_new *l' ssl
 BNnew =: ' BN_new *i' ssl
 BNmul =: ' BN_mul i *x *x *x *x' ssl
@@ -354,7 +359,7 @@ bitsRndR =: 4 : 0 NB. x is seed y is bits
 xp =.  {.y
 x =. x: x
  x initRND~ s =.  xp ((],{:@:] ) {~   1 i.~ <)  31 61 89 107 127 521 607 1279 2203x
- (bitsRnd + rollbits) y
+ (bitsRnd + rollbits) y NB. can overflow requested bits.  use roll instead for specific range.
 )
 
 lcG64 =: 6148914537289504899x&((x: inv^:IF64 9223371812008258273)  | *)

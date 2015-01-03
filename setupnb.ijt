@@ -10,7 +10,7 @@ NB. =========================================================
 Lab Section Intro
   This lab shows how to setup natbit and create encryption keys
 
-  can be run with: lab_jlab_ jpath '~natbit/', 'setupnb.ijt' (open a random lab to have lab verb loaded)
+  can be run with: lab_jlab_ jpath '~/natbit/', 'setupnb.ijt' (open a random lab to have lab verb loaded)
 
   Chapters of this setup Lab are:
 
@@ -150,8 +150,9 @@ A FEW RULES:
    'OLD credit card number you will remember to keep, genuinely random numbers that you will jot down, some personal words and numbers, what you will use for password #2'
 
  The password#2 combined with your password#1 will create unique encryption keys.  The 2 together must be unique to the planet .  Otherwise, this would inconvenience you.
-
- It is ok if password#1 could be picked by another 1000 or so people in the world, but not (much) more.
+ 
+ 
+ It is somewhat ok if password#1 could be picked by another 1000 or so people in the world, but not (much) more.
 
 )
 PREPARE
@@ -200,17 +201,29 @@ If you get an error, you may try again by placing the cursor on the line of code
   
 NB. =========================================================
 Lab Section
-  Enter a list of favorite numbers in popup.  If you inspect the favorites variable (by typing it) it will show up in this session's log file (.ijx) and is less secure against someone with full access to your computer.
+  Enter a list of favorite numbers in popup.  If you inspect the favorites variable (by typing 'favorites' and pressing enter) it will show up on screen and is less secure if somone can see over your shoulder.
 
   An alternate generation format has been provided (commented with leading NB .) .  The alternate format should end with a number between 0 and 32 .
 
-  To use the alternate format, edit the line to remove the NB ., and then press enter twice.  If fewer people use the alternate format, then it might be safer.
- 
-  If you are following recommendations, THIS IS PASSWORD #1
+  To use the alternate format, edit the line to remove the NB ., and then press enter twice.  If fewer people use the alternate format, then it might be safer.  Though it is not as recommended.
+
+  A good way to write down phrase information is to code it in such a way that only you know the answers to all of the questions/clues written down.
+
+  girl/boy friends with a cued year.  pets with cued year.  initials to expand.  Abbreviations (with personal meaning) with cue to expand.  
+
+  Not good choices for cues are favorite movie/food/colour, because those can change over the years.  
+
+  All of the information you enter for PASSWORD #1 will be destroyed on exiting this program.  None of the raw information will ever be readable by anyone else.  The purpose is to generate a 512 bit (154 digit) number that is unique in the world.  This is a one way hash function that cannot recover the original info form the large number.  The reason you need to be able to remember this information is if you want to add it on another computer, or this computer is unusable.
+
+  Follow a structured format.  Your name with middle names/initials is a good start. Date of birth is good too. (One feature of this system is the ability to prove that you created the original key, and so Name and Date of birth as part of the passphrase helps to do this). But include information that only you know as well.  write clues on paper, but also email yourself the clue sheet.  Title email 'Note to self' 
+
+  Everything you enter is case sensitive, and any leading or trailling spaces are meaningful too.  You may use unicode characters (French/German accents Arabic Asian alphabets), but I have no idea if it would be complicated to read them 20 years from now.
+
+  If you are following recommendations, THIS IS PASSWORD #1.  
 )
 jpath '~temp'
 NB. favorites =:  (((i.32) + {:@:(0&{::)) { [: s512 listhash [: , ": &>) splitpw wd 'mb input text "favorites key generator" "word(s) followed by space and number(or last one) below 32" '
-favorites =: s512 listhash wd 'mb input text "favorites key generator" "A long password unlikely to be used by anyone else in the world" '
+favorites =: s512 listhash wd 'mb input text "PASSWORD #1 (salt)" "A long password unlikely to be used by anyone else in the world" '
 
 NB. =========================================================
 Lab Section System key
@@ -255,7 +268,6 @@ Lab Section
 
   THIS WILL TAKE LESS TIME THAN Previous key generation.
 
-  The code line has been commented out because it is not really necessary to do this test.
 )
 
  syskey =: 894 FixCompressedN^:_ syskey
@@ -282,7 +294,6 @@ Lab Section
 
   THIS WILL TAKE LESS TIME THAN Previous key generation.
 
-  The code line has been commented out because it is not really necessary to do this test.
 )
  perskey =: 1214 FixCompressedN^:_ perskey
 
@@ -339,7 +350,7 @@ pathcreate APPDATA , 'keys'
 (3!:1 LOGON) fwrite APPDATA , 'keys/keys.settings'
 NB. =========================================================
 Lab Section Sending public keys by email
-  Your public keys can be sent to a member, who preferably knows you, by email, so that you may be included in the society.
+  Your public keys are being assigned to PUBKEYS variable.  They can be sent to a member, who preferably knows you, by email, so that you may be included in the society.
 
   You should also include a vague description of your name and location, and a precise email address.
 
@@ -365,7 +376,7 @@ Lab Section Location
   LOCATION =: 'USA Northern Georgia';'Paris France'
   LOCATION =: 'Cote D''Ivoire';'Berlin, Allemagne'
 
-  It doesn't need to be precise.
+  It doesn't need to be precise.  The purpose of both NAME and LOCATION is to allow people who know you to recognize you in their contacts.
 )
 EMAIL =: ''
 
@@ -375,7 +386,7 @@ Lab Section EMAIL
 
   EMAIL =: 'O''connor.G@natb.it'
 
-  A pause in loading this section is due to loading (and possibly downloading) compression library
+  A pause in loading this section is due to loading (and possibly downloading) the common zlib compression library.  If you see an error use Tools | Package Manager and install/update all arc/... packages.
 )
 PREPARE
 require '~addons/arc/zlib/zlib.ijs'
@@ -394,8 +405,11 @@ NB. =========================================================
 Lab Section
   The above copied your public information to clipboard.  Create an email to a society member you preferably know, paste data there, but do not send the email until we verify that your account is correct.
 
-  Printed below is your name, email and location.  If any of these are blank, you should reset them, and then rerun the wd'clipcopy *'.... line above.
+  Printed below is your public information name, email and location.  If any of these are blank, you should reset them, and then rerun the wd'clipcopy *'.... line above.
+
+  If either of your 2 PUBKEYS are 0, or not numbers, then you likely have not followed instructions to create them above, and you should restart.
 )
+,. a.&i. each PUBKEYS
 NAME ; EMAIL;< LOCATION
 
 
@@ -439,7 +453,7 @@ NB. perskey  'wrong password'"_`('matched previous... congratulations.'"_)@.-: t
 
 NB. =========================================================
 Lab Section
-  Spending key password test. PASSWORD #3
+  Spending key password test. PASSWORD #3 (which may be the same as password #2)
 )
 
 
@@ -447,7 +461,7 @@ NB.  SPENDING 'wrong password'"_`('matched previous... congratulations.'"_)@.-: 
 
 NB. =========================================================
 Lab Section
-  logon key password test.  PASSWORD #4
+  logon key password test.  PASSWORD #4 (which may be the same as password #2)
 )
 
 NB.  LOGON 'wrong password'"_`('matched previous... congratulations.'"_)@.-: }. (256#.inv each ;/ RWdparams 2{. syskey), SPENDING[1 Slowbytes wd'mb input text "enter password" "Logon password: " '
@@ -461,7 +475,7 @@ NB. =========================================================
 Lab Section
  This chapter relies on the first chapter being completed, and keys having been generated and saved to disk (up to chapter 3).
 
- Your logon password please.  Gathering system key params.  PASSWORD #4
+ Your logon password please.  Gathering system key params.  PASSWORD #4 (which may be the same as password #2)
 )
 PREPARE
 NB. FAVORITES =: 3!:2 fread APPDIR , 'favorites.settings'
@@ -474,7 +488,7 @@ KEYS =: 3!:2 fread APPDATA , 'keys/keys.settings'
  
 NB. =========================================================
 Lab Section
- Your spending password please.  Gathering personal key params  PASSWORD #3
+ Your spending password please.  Gathering personal key params  PASSWORD #3 (which may be the same as password #2)
 )
 PERSP=:(],~[:*/(0 1&{))>256x#.each ;@:(rollpad@:#22 b.each<)each(5}.DKEYS)[1 Slowbytes   ;: inv@:(}: , 100&+&.".each@:{:);: wd'mb input text "enter password" "Spending password: " '
 
