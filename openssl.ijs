@@ -329,7 +329,7 @@ initRND =:  3 : 0
 NB.roll =: 'seed' lcG31
 NB.seed =: y + */ RawRnd31 2 [ 9!:1  y [ (9!:43) 1
 : 
-seed =: (2 ^ x-3) + y + */ x:^:(-. IF64) RawRnd31 2 [ 9!:1  (2x^31) | y [ (9!:43) 1
+seed =: (2x ^ x-3) + y + */ x:^:(-. IF64) RawRnd31 2 [ 9!:1  (2x^31) | y [ (9!:43) 1
 select. x case. 31 do. roll =: 'seed' lcG31"0 case. 61 do.  roll =: 'seed' lcG61"0 case. do. roll =: x lcG4 'seed'"0 end.
 seed
 ) 
@@ -430,7 +430,7 @@ while. -.@MillerRabinQW p do. p =. 3 + 8 * r4n - roll r4n8 end. NB.3 + r4n * 8 *
   ql =. p >.@%~ 8 %~ aa
   qu =. p >.@%~ 8 %~ n
 r =. qu - ql
-y bitsRndR 2 >.@^. r
+NB. y bitsRndR 2 >.@^. r  NB. no need to reset 
 q =. 1 -~ 8* ql + a=. roll r
 die =. 0
 while. -.@MillerRabinQW q do. a=.a+1 
