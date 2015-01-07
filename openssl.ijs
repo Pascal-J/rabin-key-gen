@@ -491,6 +491,13 @@ Slowbytes =:  4 : 0 NB.y is numbytes # bytes (or range), x is passphrase in spli
 bits =. 129 + ^:> >: {: n
 (bits ,~ s512 bighash ; ": each x) lcGPrime x
 )
+
+TimeBytes =: 4 : 0 NB. x is range of start,len numbers to be appended to pw, y is pwd in splitpw format
+'l u' =. x
+c =. 10
+r =. c >.@%~ u
+(;/ 0 , l + c * i.r) ,. (;/ l + i.c) , (r,c) $ timex each  (<'1000 Slowbytes ') , each  <"1 ([: quote  y ,"1 ' ' , ":)"0 l + i. r*c
+)
 getdn =: 3 : 0 NB. Just get d and n
 NB.'p q' =. genqpn4`genq@.(1=#) y 
 'p q' =. genqpn4 y 

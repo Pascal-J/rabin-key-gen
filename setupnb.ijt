@@ -20,7 +20,7 @@ Lab Section Intro
  Chapter 4 - password confirmation tests 
  Chapter 5 - Disk tests and tutorials
  Chapter 6 - Confirmation setup -  Received email confirming acceptance to society.
- Chapter 7 - Making Account changes 
+ Chapter 7 - Changing password #3/4 
 
   Press Menu item Help | Studio | Labs | Chapters to jump directly to a chapter.
 
@@ -320,7 +320,7 @@ Lab Section  Saving keys
 
  A slow function is being used to encrypt your data on disk so that it will be harder for an attacker to guess. You may add an extra number to the end of your passphrase to change how fast or slow this encryption process is.  There is not much reason to make the last number greater than 400-600.  If the encryption pauses more than half a second before completing, you should probably prefer to lower the last number until it takes under a quarter of a second (noticeable but brief pause) or so.
 
-PASSWORD #3
+PASSWORD #3  At least 6 letters followed by number(s).  If wanting to use minimum 6 letters, security is greatly enhanced by adding an easy to type lower case word in addition to the 6 letters.
 )
 
 NB. IF THIS OPERATION TAKES A LONG TIME, SEE LAST PARAGRAPH OF ABOVE TEXT.  yOU MAY WANT TO SHORTEN (or add) LAST NUMBER IN YOUR PASSPHRASE TO BE BELOW 300.
@@ -445,7 +445,7 @@ Lab Section personal password
 
 perskey =: tempkey
 
-THIS WILL TAKE THE SAME MINUTE OR SO.  PASSWORD #2
+THIS WILL TAKE THE SAME MINUTE OR SO.  PASSWORD #2b
 )
 
 
@@ -528,3 +528,146 @@ NB. =========================================================
 Lab Section
   Done.  Thank you.  If you generated clipboard data for emailing to join society, and these tests passed, then you may go ahead and send the email to one who will add you to a society.
 )
+
+NB. =========================================================
+Lab Chapter Acceptance Confirming email received
+NB. =========================================================
+
+Lab Section
+  Empty for now.
+)
+
+NB. =========================================================
+Lab Chapter Changing Disk Passwords
+NB. =========================================================
+
+Lab Section Disk Passwords
+  Your private keys are stored on disk.  These are encrypted with passwords 3 and 4, which by default may be the same as password #2.
+
+  This section will help refine your password.  To select one that is secure to hacking tools if your hard drive is copied or stolen.
+
+  While we try to make a 6 letter and 2 number password secure in such circumstances, the best way to make such a short password secure is to add an easy to type word to it, and/or other numbers.
+
+  Most people can type an additional short word in under half a second, and once you are typing numbers, adding more numbers is quick to type too.
+
+  The following section will display a short table for password 'abc 12' and various extra numbers added to them
+)
+ NB. press ctrl-J to advance
+
+Lab Section Disk Passwords
+  This table shows the encryption times for the password 'abc 12' with an extra number from 60 to 89 added to the password.  The encryption time varies because the last number is used to search for a prime.  Usually, the larger the number the longer the expected time to find a prime, but luck plays a huge factor in the time it takes.
+
+  The first row of the table, shows the time it takes to generated with the key parameter 60-69 (as labeled), while the first data column is the 2nd column.  And its key value is from the lefmost label in its row.
+
+  The cell with key parameter 88, is the row that starts with 80 (last), and column below 68 (2nd last)
+)
+
+ 60 30 TimeBytes 'abc 12'
+
+Lab Section Disk Passwords
+ If you insist on a 6 letter (or yikes!, shorter) password, you would pick a key from the above table that is a bit over 0.5 seconds such as 79 81 85.
+
+ If you followed the recommendation of adding an extra word to your intended password, then you can choose a much quicker decryption key such as 62, 76-78, or 87-89.
+
+ If your original password was 'abc 12' this table is suggesting an additional key of say 65, so your new password would be 'abc 12 85'
+
+ The way this system slows down hackers is that it take 3 or so seconds even with these small numbers to generate and test 10 fairly small keys.  Testing 500 of such keys will take over half an hour.  If your core password was in a hacker's dictionary of 2M entries, it would take up to 115 years to crack it.  This number is not actually that secure as they are allowed to use more than 1 computer and it can be faster, and the expected cracking time is 62 years / number of computers they use / how much faster they are... so its better to not have your password in the top 2M dictionary entries.
+
+ Adding a simple lower case word to a moderately likely password can turn 100 computer-year security into 5M computer-years, which is strong enough.  100K computer=years would generally cost over $30M in electricity costs to attack.
+
+ Next section will create the same table for password # 4, but a large table and may take a few minutes.
+)
+ 90 20 TimeBytes 'abc 12'
+
+Lab Section Password#3
+  Enter the new password #3 you might like, and a table will be generated with an additional key parameter.  The table shows the decryption time each key has in combination with your password.
+
+  If this takes under 1 minute, then increase the left most number in the line to generate new timings. (Put cursor on that command line, edit left number and press enter twice)
+
+  THIS MAY TAKE A COUPLE OF MINUTES
+)
+
+
+60 40 TimeBytes wd'mb input text "enter desired password #4" "logon password: " '
+
+NB. 180 40 TimeBytes wd'mb input text "enter desired password #3" "logon password: " '
+
+NB. 260 40 TimeBytes wd'mb input text "enter desired password #3" "logon password: " ' 
+
+Lab Section Password#3
+ If the last section took under 2 minutes to complete, increase the left number (by at least 40) and rerun.  When your password takes 2 minutes to decrypt in groups of 40, then pick one number from that list as an extra key to add to your password.
+
+ The number you pick for the logon password can take up to 1 second, as it would only be entered once per day, or less often if you stay logged on.
+
+ If you want to keep the same password for logon and spending (passwords #3 and #4), then add a password key from one of the previous tables, and the timings from both logon and spending passwords will be provided.
+
+ FORMAT is old password (including trailing number(s)) with added space and then added key number.
+
+ The timing for 'logon decrypt time' should be approximately the same as the table value for the key used.  If the 'spending decrypt time' is too long, then repeat while choosing a different key.  Ideally, both times are under 1 second.
+
+ You may also try random passwords in the same format to make independent passwords #3 and #4 based on timings.
+
+ The longer and more unique (Upper case letters, punctuation) your passwords are, the quicker the timings you can safely use.
+)
+
+ ('logon decrypt time';'spending decrypt time') ,. timex each (< '1000 Slowbytes ') , each quote each (; ;: inv@:(}: , 100&+&.".each@:{:)@:;:) 'abc 12 52' NB. previous password example
+
+ ('logon decrypt time';'spending decrypt time') ,. timex each (< '1000 Slowbytes ') , each quote each (; ;: inv@:(}: , 100&+&.".each@:{:)@:;:) wd'mb input text "enter desired password #4" "logon password: " '
+
+Lab Section Changing passwords
+  Next section will ask you for your old password #3 and #4, so that your keys may be decrypted from disk.  If you do not want to change keys, you may either quit this lab, or select another chapter.
+)
+
+Lab Section Changing passwords
+  Enter your old PASSWORD # 4 Logon password
+)
+
+ 'APPDIR APPDATA' =: 3!:2 fread  (1!:43 ''),'/', 'nbpath.settings'
+
+KEYS =: 3!:2 fread APPDATA , 'keys/keys.settings'
+
+ SYSP =: (] ,~ [: */ (0 1&{)) > 256x #. each 5{. DKEYS =: ;@:(rollpad@:#22 b.each<)each KEYS  [1 Slowbytes  wd'mb input text "enter password (#4)" "logon password: " '
+ 
+ 12345678901234x  ('wrong password'"_`('password correct'"_))@.-:({. SYSP) Verify SYSP Sign x: 12345678901234
+NB. =========================================================
+Lab Section
+ Your OLD spending password please.  PASSWORD #3 (which may be the same as password #2)
+
+)
+PERSP=:(],~[:*/(0 1&{))>256x#.each ;@:(rollpad@:#22 b.each<)each(5}.DKEYS)[1 Slowbytes   ;: inv@:(}: , 100&+&.".each@:{:);: wd'mb input text "enter password(#3)" "Spending password: " '
+
+ 12345678901234x  ('wrong passwords'"_`('passwords correct'"_))@.-: ({. PERSP) Verify PERSP Sign x: 12345678901234
+
+Lab Section
+ Your NEW spending password please.  PASSWORD #3 (new password you selected at begining of this chapter)
+)
+ ,. SPENDING=:;@:(rollpad@:#22 b.each<)each  }. PERSKEY =:  256#.inv each PERSP[1 Slowbytes  ;: inv@:(}: , 100&+&.".each@:{:) ;: wd'mb input text "enter password" "spending password: " '
+
+Lab Section
+ Your NEW logon password please.  PASSWORD #4 ( can be same as #3) (new password you selected at begining of this chapter)
+)
+ ,. LOGON=:;@:(rollpad@:#22 b.each<)each }. SYSKEY =: (256#.inv each SYSP), SPENDING[1 Slowbytes wd'mb input text "enter password" "logon password: " '
+
+Lab Section
+ Next section will verify the keys you just made.  You can skip this part by either quitting the lab, or selecting a different chapter.
+)
+
+(3!:1 LOGON) fwrite APPDATA , 'keys/keys.settings'
+
+KEYS =: 3!:2 fread APPDATA , 'keys/keys.settings'
+
+Lab Section Changing passwords
+  Enter your new PASSWORD # 4 Logon password
+)
+
+ SYSP =: (] ,~ [: */ (0 1&{)) > 256x #. each 5{. DKEYS =: ;@:(rollpad@:#22 b.each<)each KEYS  [1 Slowbytes  wd'mb input text "enter password (#4)" "logon password: " '
+ 
+ 12345678901234x  ('wrong password'"_`('password correct'"_))@.-:({. SYSP) Verify SYSP Sign x: 12345678901234
+NB. =========================================================
+Lab Section
+ Your new spending password please.  PASSWORD #3 (which may be the same as password #2)
+
+)
+PERSP=:(],~[:*/(0 1&{))>256x#.each ;@:(rollpad@:#22 b.each<)each(5}.DKEYS)[1 Slowbytes   ;: inv@:(}: , 100&+&.".each@:{:);: wd'mb input text "enter password(#3)" "Spending password: " '
+
+ 12345678901234x  ('wrong passwords'"_`('passwords correct'"_))@.-: ({. PERSP) Verify PERSP Sign x: 12345678901234
