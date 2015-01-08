@@ -304,7 +304,7 @@ expandpw1 =: 256&$@:(255&- ,])@: ( favorites  ([ (, ,) (22 b.)"0 1 , ])  (a. i. 
 expandpw2 =: 256&$@:(255&- ,])@: ( ([: ; 256 #.inv each [)  ([ (, ,) (22 b.)"0 1 , ])  (a. i. ]) ) 
 expandpw3 =: 5 32&$@:(255&- ,])@: (  (favorites ,~ [: ; 256 #.inv each [)  ([ (, ,) (22 b.)"0 1 , ])  (a. i. ]) ) 
 expandpw =:   (favorites ,~ [: ; 256 #.inv each [)  ([ (, ,) (22 b.)"0 1 , ])  (a. i. ]) 
-
+expandpwF =:   (favoritesF ,~ [: ; 256 #.inv each [)  ([ (, ,) (22 b.)"0 1 , ])  (a. i. ]) 
  parsepwC =: (2  : 0) 
 'enter at least one space, a leading non number, and use trailing number(s)' assert 1<# ;: y
 (0&".@:>@:{: (256| +/)@:((n $ [: u listhash ":@:expandpw) ,  (5 ,n) $ expandpw) ;@:}:) ;: y
@@ -486,17 +486,34 @@ NB. lcG4 =: 2 : ' ] |  n (][ [ assign ( {.@RawRnd31@1:) + ]) (n~ + 48271x)  ((1-
 roll =: (] | 'seed' (][ [ assign ( {.@RawRnd31@1:) + ]) (p|seed) (p|*) 3 : 'seed')"0
 )
 NB. slow to stop brute force guessing.
-Slowbytes =:  4 : 0 NB.y is numbytes # bytes (or range), x is passphrase in splitpw format
+Slowbytes =:  4 : 0 NB.x is numbytes # bytes (or range), y is passphrase in splitpw format
 'n p' =. splitpw y
 bits =. 129 + ^:> >: {: n
-(bits ,~ s512 bighash ; ": each x) lcGPrime x
+(bits ,~ s512 bighash ; ": expandpwF&>/ splitpw y) lcGPrime x
+)
+
+lcGPrime2 =: 1 : 0 NB. Gens a prime lcg based on seed and bits , but with y (constant) slowdown factor
+'s bits' =. m
+p=. 11 + 12 * s bitsRndR bits
+while. -.@MillerRabinQW p do. p =. 11 + 12 * rollbits bits end.
+NB. lcG4 =: 2 : ' ] |  n (][ [ assign ( {.@RawRnd31@1:) + ]) (n~ + 48271x)  ((1-~2x^m) |  *) 3 : n'
+roll =: (] | 'seed' (][ [ assign ( {.@RawRnd31@1:) + ]) ((y,~ bits-8) bitsLnRNGSlow  +/ (256 * RawRnd31 2) | p , seed) (p|*) 3 : 'seed')"0
+seed
+)
+NB. slow to stop brute force guessing.
+Slowbytes2 =:  1 : 0 NB.x is numbytes # bytes (or range), y is passphrase in splitpw format. m is slowdown factor
+:
+'n p' =. splitpw y
+bits =. 129 + ^:> >: {: n
+(bits ,~ s512 bighash ; ": expandpwF&>/ splitpw  y) lcGPrime2 1 >. m - bits
+roll x
 )
 
 TimeBytes =: 4 : 0 NB. x is range of start,len numbers to be appended to pw, y is pwd in splitpw format
 'l u' =. x
 c =. 10
 r =. c >.@%~ u
-(;/ 0 , l + c * i.r) ,. (;/ l + i.c) , (r,c) $ timex each  (<'1000 Slowbytes ') , each  <"1 ([: quote  y ,"1 ' ' , ":)"0 l + i. r*c
+(;/ 0 , l + c * i.r) ,. (;/ l + i.c) , (r,c) $ timex each  (<'1 (300 Slowbytes2) ') , each  <"1 ([: quote  y ,"1 ' ' , ":)"0 l + i. r*c
 )
 getdn =: 3 : 0 NB. Just get d and n
 NB.'p q' =. genqpn4`genq@.(1=#) y 
