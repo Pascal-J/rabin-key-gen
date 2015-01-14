@@ -499,12 +499,14 @@ NB. =========================================================
 Lab Section Sending public keys by email
   Your public keys are being assigned to PUBKEYS variable.  They can be sent to a member, who preferably knows you, by email, so that you may be included in the society.
 
-  You should also include a vague description of your name and location, and a precise email address.
+  perskey and syskey each contain 3 numbers.  The first 2 form your private key.  the last is your public key.  The public key components are what are gathered into the PUBKEYS variable.
+ 
+  You should also include a vague description of your name and location, a precise email address, and the languages you know.  which we will gather or double check in next sections.
 
 )
 PUBKEYS =:  {&a. each 256 #.inv each {: each perskey ,~&< syskey
 
-NAME =: ''
+
 
 NB. =========================================================
 Lab Section Name
@@ -512,16 +514,24 @@ Lab Section Name
 
   You are encouraged to use a single letter initial for your first or last name.  Such as:
   NAME =: 'FirstName L.'
+
+  If you have an unusual first name and common lastname, you may prefer the enhanced annonimity of initializing your first name.
+
+  The purpose of the NAME is only to help people who know you recognize you.
 )
-LOCATION =: ''
+] NAME =: ;: inv ({. , [: {.each {:);: FULLNAME
+
+] LOCATIONS =: ';' cut LOCATIONS
 
 NB. =========================================================
 Lab Section Location
-  Enter your location, Country Region City.  If there are multiple, separate them with ; (careful with quotes )  Examples:
+  Confirm that your location, Country Region City is boxed above.  If there are multiple, separate them with ; (careful with quotes )  Examples:
  
-  LOCATION =: 'Toronto ON Canada'
-  LOCATION =: 'USA Northern Georgia';'Paris France'
-  LOCATION =: 'Cote D''Ivoire';'Berlin, Allemagne'
+  You should have already entered LOCATIONS earlier.  If all of them don't appear correctly you should restart the lab.
+
+  LOCATIONS =: 'Toronto ON Canada'
+  LOCATIONS =: 'USA Northern Georgia';'Paris France'
+  LOCATIONS =: 'Cote D''Ivoire';'Berlin, Allemagne'
 
   It doesn't need to be precise.  The purpose of both NAME and LOCATION is to allow people who know you to recognize you in their contacts.
 )
@@ -529,9 +539,17 @@ EMAIL =: ''
 
 NB. =========================================================
 Lab Section EMAIL
-  Use an email that may receive spam.  Ideally, Do not use an email that contains a ', but example:
+  Use an email that may receive spam.  Ideally, Do not use an email that contains a ', but if you must, an example:
 
   EMAIL =: 'O''connor.G@natb.it'
+
+  A pause in loading this section is due to loading (and possibly downloading) the common zlib compression library.  If you see an error use Tools | Package Manager and install/update all arc/... packages.
+)
+
+Lab Section LANGUAGES
+  using either the international 2 letter codes, or the english name of the languages you know
+
+  LANGUAGES =: ;: 'EN FR CHINESE'
 
   A pause in loading this section is due to loading (and possibly downloading) the common zlib compression library.  If you see an error use Tools | Package Manager and install/update all arc/... packages.
 )
@@ -541,12 +559,17 @@ install_jzlib_^:NOZLIB_jzlib_ ''
 load '~addons/arc/zlib/zlib.ijs'
 PREPARE
 
+ LANGUAGES =: ;: 'EN'
+
+
+
+
 NB. =========================================================
 Lab Section
   Public key components have been placed on clipboard.  If you are joing society, then pasting this data in email now is approapirate.
 )
-wd 'clipcopy *', tobase64 zlib_compress 3!:1 EMAIL ; PUBKEYS , NAME;<LOCATION
-,. 3!:2 zlib_uncompress frombase64 wdclippaste '' 
+wd 'clipcopy *', tobase64 zlib_compress 3!:1 EMAIL ; PUBKEYS , NAME;(<LOCATIONS), < LANGUAGES
+,. 3!:2 zlib_uncompress frombase64 wdclippaste '' NB. this is what was copied to send.
 
 NB. =========================================================
 Lab Section
@@ -557,7 +580,7 @@ Lab Section
   If either of your 2 PUBKEYS are 0, or not numbers, then you likely have not followed instructions to create them above, and you should restart.
 )
 ,. a.&i. each PUBKEYS
-NAME ; EMAIL;< LOCATION
+EMAIL ; PUBKEYS , NAME;(<LOCATIONS), < LANGUAGES
 
 
 NB. =========================================================
