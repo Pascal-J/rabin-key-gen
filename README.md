@@ -27,11 +27,11 @@ It uses an interactive J lab session for portability accross platforms (64 and 3
 
 The keys are generated deterministically such that the same key may be generated on other computers without transfering any information through a network.  Significant entropy is created to ensure the generated key will be unique for 10s of billions of people, even with short memorable passphrases being used.
 
-A significant advantage of deterministic key generation is that it is possible to prove that you are the creator of the key even if the mathematics, or other trick uses, for the cryptosystem reveal your key, or malware/key logging/data theft compromise your private key.  
+A significant advantage of this deterministic key generation process is that it is possible to prove that you are the creator of the key, without revealing the creation passphrases, even if malware/key logging or data theft compromise your private key.  
 
 Being able to prove authorship allows you to revoke a key (and replace it with a new one)
 
-Using a series of short memorable passphrases reduces the chance of being locked out of your key.
+Innovative ways to create a memorable long key allow the creation of unique salts to your cryptographic keys, that are protected using 1 or a series of short memorable passphrases to reduce the chance of being locked out of your key.  Theft of your salt provides no information useable to prove authorship of your key, and would still require Millenia of computer time to build hacking tables that expose your key on disk.
 
 ##Quick Overview of use of this program
 
