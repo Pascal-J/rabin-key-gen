@@ -40,7 +40,7 @@ s=. v"_ y
 s=. v"_ y
 (x u (s{y)) (s}) y 
 )
-
+amendT =: 2 : ' u hook (n { ]) n} ]'
 amendL0_z_ =: 2 : 0  NB. v is n or n{"num
 s=. v"_ y
 NB. pD s
@@ -102,7 +102,10 @@ a2v =: 1 : 0 NB. for dyad adverb, where adverb takes noun arg.  ie (3 1,: 6 2) '
 
 Fork =: 1 : ' 2 : (''u"_ '' , ''('', u lrA , '')'' , '' v"_'')'
 Fork =: 1 : ' 2 : (''u '' , ''('', u lrA , '')'' , '' v"_'')'
-B =: Between =: 2 : ' 1 : (''[: ('' , u lrA , '') [: '', '' u ('' , (v lrA) ,'')"_'')'
+Between =: 2 : ' 1 : (''[: ('' , u lrA , '') [: '', '' u ('' , (v lrA) ,'')"_'')'
+B =: 2 : '(@: u)(v @:)'
+Bwy =: 2 : ' 1 : (''] ('' , v lrA , '') [: '', '' u ('' , (u lrA) ,'')"_'')'
+NB. Bwy =: 2 : '(] v u)' 
 BetweenE =: 2 : ' 1 : (''([: ('' , u lrA , '') [: '', '' u ('' , (v lrA) ,'')"_) :: (''  , u lrA , '')'' )'
 Betweensfx =: 2 : ' 1 : (''(('' , u lrA , '') ] [: '', '' u ('' , (v lrA) ,'')"_) :: (''  , u lrA , '')'' )'
 NB. key value boxed data.  All verbs use y as the kv store, and x as the query/new val

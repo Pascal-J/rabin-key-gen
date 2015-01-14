@@ -160,8 +160,8 @@ tobase64=: 3 : 0
 res=. BASE64 {~ #. _6 [\ , (8#2) #: a. i. y
 res, (0 2 1 i. 3 | # y) # '='
 )
-tob64 =: ('=' #~  0 2 1 i. 3 | # )  ,~ BASE64 {~  [: #. _6  ]\    (8#2) ,@:#: a.&i. 
-tb64 =: 3 : '(''='' #~  0 2 1 i. 3 | # y)  ,~ BASE64 {~  #. _6  ]\    (8#2) ,@:#: a.&i. y'
+tb64 =: ('=' #~  0 2 1 i. 3 | # )  ,~ BASE64 {~  [: #. _6  ]\    (8#2) ,@:#: a.&i. 
+tob64 =: 3 : '(''='' #~  0 2 1 i. 3 | # y)  ,~ BASE64 {~  #. _6  ]\    (8#2) ,@:#: a.&i. y'
 t2b64 =: 3 : '(''='' #~  0 2 1 i. 3 | # y)  ,~ res=. BASE64 {~  #. _6  ]\    (8#2) ,@:#: a.&i. y'
 
 NB. =========================================================
@@ -170,7 +170,7 @@ frombase64=: 3 : 0
 pad=. _2 >. (y i. '=') - #y
 pad }. a. {~ #. _8 [\ , (6#2) #: BASE64 i. y
 )
-fb64 =:a. {~ [: #.  _8 [\  (6#2) ,@:#: BASE64&i. }.~ _2 >. # -~ i.&'='
+fb64 =: (_2 >. ( i.&'=') - #) }. a. {~ [: #. _8 [\ [: , (6#2) #: BASE64&i.
 
 coinsert 'jtask'
 
@@ -310,7 +310,7 @@ expandpwF =:   (favoritesF ,~ [: ; 256 #.inv each [)  ([ (, ,) (22 b.)"0 1 , ]) 
 (0&".@:>@:{: (256| +/)@:((n $ [: u listhash ":@:expandpw) ,  (5 ,n) $ expandpw) ;@:}:) ;: y
 )
 parsepw =:  s512 parsepwC 61
-splitpw =:  (;@:}: ;~  a:&+^:(-: 0:)@:(0&".)@:>@:{:)@:;: :: ('needs a trailing number greater than 0'"_)
+splitpw =:  (;: inv@:}: ;~  a:&+^:(-: 0:)@:(0&".)@:>@:{:)@:;:@:(-.&'''' ) :: ('needs a trailing number greater than 0'"_)
 itemsbetween =: 2 : '((m >:@i.~ y) , n <:@i.~ y) (takerange { ]) y'
 
 NB. secure RNG depends on whether numbers are published or discoverable.  Returned number range should be 30 bits less than period for basic security, but there are ways of guessing seed range.
@@ -361,6 +361,14 @@ x =. x: x
  x initRND~ s =.  xp ((],{:@:] ) {~   1 i.~ <)  31 61 89 107 127 521 607 1279 2203x
  (bitsRnd + rollbits) y NB. can overflow requested bits.  use roll instead for specific range.
 )
+
+bitsRndR2 =: 4 : 0 NB. x is seed y is bits, then num bytes to return
+xp =.  {.y
+x =. x: x
+ x initRND~ s =.  xp ((],{:@:] ) {~   1 i.~ <)  31 61 89 107 127 521 607 1279 2203x
+ rollbits 8 #~ }. y NB. can overflow requested bits.  use roll instead for specific range.
+)
+
 
 lcG64 =: 6148914537289504899x&((x: inv^:IF64 9223371812008258273)  | *)
 genqpn4 =: 3 : 0
@@ -418,8 +426,8 @@ p,q
 NB. can be 2bits less than (8)byte boundary. as sig adds 2 bits. pad is 1 + 8x where x is bytes padded.
 gencompressedN =: 4 : 0 NB.y is seed x is bits of n, safepadbits.  bits of n should be mult of 2
 'nb pad' =. 2 {. x , 17x
-pD n =. 2x^ nb 
-pD aa=.#.  a=. x: (0 #~ nb - a),~ 1 #~ a=. (nb <.@% 2) - pad
+ n =. 2x^ nb 
+aa=.#.  a=. x: (0 #~ nb - a),~ 1 #~ a=. (nb <.@% 2) - pad
  y bitsRndR nb >.@% 2
 r4n =.   8 <.@%~ #. 2 (1 1x , 0#~ 2 -~ <.@%~) nb NB.16 %~ 2x ^ nb <.@% 2x
 NB. pD  roll f. ;lrA
@@ -436,7 +444,7 @@ die =. 0
 while. -.@MillerRabinQW q do. a=.a+1 
 if. a> r do. 'regenerate with new password/seed/padding' assert die = 0 
 die =. 1 [ a =. 0 [ q =. 1 -~ + 8 * ql + 1 else. q =. q+8 end. end.NB.q =. 1 -~ 8* ql + roll r end.
-assert. n > pD b=. p * q
+assert. n >  b=. p * q
 assert. aa < b
 assert. 0 = 8 | 5 -~ b-aa
 p,q, 8 <.@%~ 5 -~ b-aa

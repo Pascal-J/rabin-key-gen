@@ -39,6 +39,9 @@ require 'general/dirutils'     NB. if error, then use package manager to install
 
 NB. =========================================================
 Lab Section
+
+  Labs in J are a completely interactive programming environment where sections are shown one at a time (each press of Control-J key), with code associated with the section appearing below the last ')', and any result from that code appearing directly below the expression.  You may edit a line and press enter to change an expression.
+
   If previous text showed an error, you needed to install all addons in J
 
   Use Tools | Package Manager.  Click the "Not Installed" button.  Then the "Install" button.
@@ -46,6 +49,12 @@ Lab Section
   If the require line below has an error, then you need to restart this lab.
 )
 require 'general/dirutils'     NB. if error, then after package manager instructions followed.  Restart this lab.
+
+  ] MyVar =: 2 + 2
+
+  ] MyVar =: MyVar + 1
+
+  MyVar
 
 Lab Section Introduction
 More information on this program will be released shortly.
@@ -93,7 +102,7 @@ example templates:
 
   APPDIR =: jpath '~/natbit/'
 
-  APPDATA =: 'd:/some/path/that/will/be/created/edit*this*text/' 
+  APPDATA =: 'd:/some/path/that/will/be/created/' 
 
   If using windows (or mac linux), the text inside quotes may be copied from the file explorer header bar of a folder.  Then placed inside the single quotes.
   Ensure there is a trailing / in the folder name.
@@ -136,25 +145,39 @@ NB. =========================================================
 Lab Section Intro
   The keys that will be generated are for use with the Rabin WIlliams signature protocol.  The RSA protocol is more well known and has a practically identical private key.
 
-  The keys will be generated deterministically throuh a password.  This allows you to recreate the same key with the same password, and is the best way to transfer keys to another computer.
+  The keys will be generated deterministically throuh a password (actually 2).  This allows you to recreate the same key with the same password, and is the best way to transfer keys to another computer.
   
-  At least 2 passwords are used, but Paranoia permits 4.
+  At least 2 passwords are used, but Paranoia permits 4. (passwords 3 and 4 are used to encrypt keys to disk, and can be the same as password #2)
     PASSWORD #1 will not be entered on a daily basis.  (only when transfering key to another computer).  PASSWORD #1 should be either long and memorable, or long and saved securely somehow.
+)
 
-  In order to keep the password short and memorable, while preventing anyone else from accidentally generating the same one,
+Lab Section Technical Explanation
+  This presents a major challenge is ensuring that everyone (no matter how lazy) can both create a guaranteed unique password and take the necessary steps to remember it without regular use.
 
-A FEW RULES:
- PASSWORD#1 is used to generate what I call "favorite numbers".  Based on a more general password expansion encryption technique I developed.
- The password format is any text, but as required with PASSWORD#2 (and 3 or 4) you are encouraged to add another list of (or at least one) trailing numbers to it.
-   Example PASSWORD#1 s :
-   'NAME verb some other name or thing, dateof birth, some fairly random but memorable phrase, list of (or one) memorable numbers'
-   'OLD credit card number you will remember to keep, genuinely random numbers that you will jot down, some personal words and numbers, what you will use for password #2'
+  A novel technique is used to solve this challenge.  A "plaintext" you cannot forget is encrypted with a list of numbers that you will not forget, in a way that is more secure than standard techniques.
+The "plaintext" contains your name and birthday, along with public information you are willing to disclose: Your First name, Initials, citizenships, understood languages, and general locations.  Your name and birthday help ensure a fairly unique starting point, while the other data is also used to ensure very rare commonality with other individuals in the world.
+The public information lets your friends and acquaintances recognize you without letting strangers know who you are, and also lets you form groups that are language or location based.
 
- The password#2 combined with your password#1 will create unique encryption keys.  The 2 together must be unique to the planet .  Otherwise, this would inconvenience you.
+Encryption involves applying a passphrase to a plaintext such that a jumbled result provides no information about either the passphrase or plaintext.  
+In this system, your passphrase is a list (position does not matter) of numbers that are derived from a list of words and numbers.  You also create a cue sheet that will be saved in your permanent email system that will ensure that you remember the words and numbers.
+The numbers are chosen from dates, phone-numbers, and optionally, national id numbers and pins. (or any other numbers that you can remember from a cue)
+The words are chosen from female and male friends, pets, brands of vehicles or sport/hobby equipment you may have been passionate about. (or any other words you provide hints in your cue sheet)
+
+THE ONLY ATTACK POSSIBILITY:
+  Your password may only be compromised if someone can read your email, and knows all of the answers to all of the clues you included in that email.
+  You may think that it would be more secure to keep the cue sheet completely offline.  Perhaps on a couple of computers.  The danger is of losing all of your backups to a single fire, or not diligently transferring your backups when you upgrade computers.  You also risk someone obtaining your cue sheet without your email password.  
+  One risk of email or other cloud service is that the service could be cancelled.  Its up to you to decide which risk is higher.  It is considered safe from malware (operated by strangers) to have a backup cue sheet on your computer, and so provides safety from disruption of cloud services.
+  Safety from attack is guaranteed if no one else other than you can find out the answer to every clue in the cue sheet.
+  Your safety is also protected by an attacker also needing to discover password#2 to compromise your (public) cryptography keys.
+
+Proof of the security comes from each 5 letters of words that are turned into 12 digit numbers (2.4 digits per letter).  Phone numbers are 7 to 10 digits long.  Dates about 8.  If an attacker cannot guess 24 digits worth of information, then an attack is uncountable (impossible).  18 missing digits is considered too difficult to be practical.  Even if an attacker has a good idea about other numbers than the missing 24 digits, they need 100% certainty regarding the other numbers in order to have a countable attack.
+
+)
+
+Lab Section generating keys
+ The password#2 combined with your password#1 will create public private keys.  
  
  
- It is somewhat ok if password#1 could be picked by another 1000 or so people in the world, but not (much) more.
-
 )
 PREPARE
 'APPDIR APPDATA' =: 3!:2 fread    (1!:43 ''),'/', 'nbpath.settings'
@@ -165,66 +188,179 @@ load 'zutils.ijs'
 favorites =: 1 2 3
 load 'openssl.ijs'
 PREPARE
-s256 listhash 'A simple phrase'
 
-10{. s256 listhash 'A simple phrase'
+NB. Eventual favorites/salt hash will look like this
+61{. s512 listhash 'Firstname LastName 2014/12/31  Locations(cities/regions) appended encrypted anagram'
 
-(>: i.10){ s256 listhash 'A simple phrase'
+NB. Rail Fence cypher (google it) utilities
+enc2 =:  ~.@:[ /:~ ] </.~ #@:] $ [ 
+enc =: ;@:enc2
+split =: ] </.~ ~.@:[ #~ ~.@:[ /:~ [: #/.~ #@:] $ [
+pop=: 4 : 'o=. i.0  for_i. x do. y=. }. each amend i y [ o=. o,{. i {:: y  end. y (,<) o'
+dec =:  >@{:@:(($~ #) pop  split)
 
+NB. core anagramming Rail fence cypher.  (Actual encryption much more effective than this)
+0 1 2 1 enc 'Firstname LastName 2014/12/31  Locations(cities/regions) appended encrypted anagram'
 
-NB. =========================================================
-Lab Section Favorite Numbers
-
-  We will now generate a list of Favorite numbers through password #1.  This list essentially acts as a salt for your key generation.  You may replace the list with any other smaller or longer list if you choose.
-
-  The recommended way to create this list is to use a phrase that is long but easy to remember
-
-  You will not need to enter this password often.  The only time it is required is if you want to generate a key on a new or different computer.
-
-  You have the opportunity to instead create a list of numbers that is short enough to retype and save that on a piece of paper that is safe but does not reveal what it is for.  You may pick genuinely memorable numbers to you.  Old phone numbers credit cards and dates can be a source of numbers, though these might be compromised by your identity.
-
-  The following is a list of random numbers generated based on current time to the milisecond.  that you may copy them to use in your favorites list, but this is only recommended if you will write down these numbers for safekeeping.
-)
-
-10 20 $ (s512, s256) listhash  ": 6!:0 ''
 
 NB. =========================================================
-Lab Section
-  A window will pop up asking you to enter a password followed by a number. (next section) 
-
-If you get an error, you may try again by placing the cursor on the line of code below and hitting enter (twice).
-
-)
-  splitpw 'A valid phrase 42 1 2 3'
-  splitpw 'St1l1 va71d 42 '
-  splitpw 'St 1 11  va71d 42 '
-
+Lab Section Personal details
+  Your (full) name and date of birth will never be discoverable from this system.  We use them as part of your key so that you may, if you choose to, prove that you authored this key, and to ensure uniqueness among people.
   
+  the data is saved to a temporary variable, but will be destroyed when you exit this program.  This lab format allows you to inspect all executed instructions as they are run.
+
+  Enter your name the most normal way you would fill out a form. (include middle names or initials as you would normally do for a name request)
+)
+
+FULLNAME =: wd 'mb input text "enter name" "Full name: " '
+
+
+
+   NB. one way to make a key is to use one (or a list of favorite numbers which will be multiplied), and then fill in missing digit expansion with missing digits (adding 0 last)
+   genkey =: (0,~>: i.13) (] ,~ [ #~ -.@e.) 14 #.inv */@:x:  NB. generates anagram key at least 13 base-14 digits long 8e14+ possibilities.
+
+   genkey 86 NB. short numbers not as secure as longer ones.  Still, Many possible alternatives when trying to reverse.
+
+   genkey 9112001 9 11 2001 NB. Unlimited list possible. More secure to enter a date as one long number rather than many small ones.
+
+   x: (<: 2^ 11 12 13), 9112001, a. i. 'Name'  NB. full power of J available to create numbers
+   q: */ x: (<: 2^ 11 12 13), 9112001 , a.&i. 'Name' NB. individual numbers are not directly revealed unless they are prime.  Many numbers makes list too long to efficiently combine its factors.  A pin number is relatively safe as long as it is not prime and there are several other numbers.
+
+  NB. fuller scrambling of plaintext
+  (genkey 9112001)  enc  FULLNAME , '2014/12/31 Locations(cities/regions)'
+
+Lab Section Date of birth
+
+  Enter your date of birth using space or -/ separators. (Ones you would normally use.  Use leading 0s only if you normally do)
+
+  If you use multiple date formats, use the NON-american one that you use the most.
+
+  Use the same date format you expect you would use 20 years from now.
+)
+
+DOB =:  wd 'mb input text "enter date of birth" "Date of birth (/ separators): " '
+
+ 
+   encB =: [: tobase64 genkey@:[  enc  ] NB. functions to simplify use with numeric keys.
+   decB =: genkey@:[ dec frombase64@:]
+
+   9112001 encB  FULLNAME , ' ' , DOB , ' Locations(cities/regions) ' NB. creates a base64 encoding (not encryption) of the scrambled cue phrase using genkey 9112001
+
+ NB. base64 provides easier copying without worrying about trailing spaces, and ensures all characters are valid email content.
+   frombase64  9112002 encB FULLNAME , ' ' , DOB , ' Locations(cities/regions)'
+
+
+
+Lab Section Locations
+
+  Enter the locations you still have a lot of contact with.  Such as places you vacation often, or you may return to.  
+
+  You do not need to remember the exact info you type.  Include country.  Use cities if your city is fairly large.  Use county or region if small.
+
+  Separate multiple locations with ;
+)
+
+LOCATIONS =:  wd 'mb input text "enter your locations (city, region, country)" "Locations ( use ; to separate multiple locations): " '
+
+   9112001 encB(^:4) FULLNAME , ' ' , DOB  , ' ' , LOCATIONS  NB. ^:4 applies 4 consecutive encodes.  Makes anagram only decodable with correct key and expands output each iteration for variable anagraming.
+
+   fb64  9112003 encB(^:3) FULLNAME , ' ' , DOB  , ' ' , LOCATIONS   NB. one use of frombase64 sees another base64 layer, but
+
+   fb64(^:2) ] 9112001 encB^:3 FULLNAME , ' ' , DOB  , ' ' , LOCATIONS   NB. but 2 (or more) uses sees "garbage"
+
+   9112001  decB^:3 (9112001 encB^:3 FULLNAME , ' ' , DOB  , ' ' , LOCATIONS ) NB. to decrypt, the same key needs to be provided, and same repeat (^:) left parameter
+
+   9112001  decB^:3 (9112001 encB^:4 FULLNAME , ' ' , DOB  , ' ' , LOCATIONS ) NB.  But if you provide too small of a repeat parameter (3 instead of 4) with the right key, you will still see base64 code (letters and numbers).  So you don't need to memorize the repeat parameter.  If you have the right key, just increase it until it deciphers.
+
+   9 11 2001  decB^:2 (9112001 encB^:3 FULLNAME , ' ' , DOB  , ' ' , LOCATIONS ) NB. the wrong decryption key though produces garbage, whether or not the repeat parameter matches what was used on encryption.
+
+   encB3 =: encB^:3 NB. because of last property there is no need to use higher than 3 repeat value, and so we can fix a name to these functions.
+   decB3 =: decB^:3
+
+
+
+Lab Section Passnumbers for your Clue sheet
+ Creating a cue sheet that you will preserve electronically for the rest of your life is necessary for ensuring memory of this passphrase
+
+ While the passphrase consists of numbers, there is a text and numeric component to it.  For the numeric component, always enter the longest possible version of a number such as 4 digit years for dates, or included area code in phone numbers.
+
+ Your Birthday is a good Passnumber.  Other dates or numbers you will remember the rest of your life are also good.
+
+ Phone numbers make ok passnumbers if you can access email that ensures you remember them.  Include area codes.  They are not ideal numbers in that many people would know yours, and you will eventually forget many.
+
+ social insurance and bank PIN numbers are safe to use, but just in case, do not put spaces between them.  These make great numbers because few other people will know them.
+
+ While years might be ok (as a response to a clue), the number is too short, and you might not remember the exact year.
+
+ CUESHEET TIPS for numeric part
+
+  'Birthdays 3' - If there are 3 birthdays you remember and don't need to say their names to know which would be the top 3.
+  'Birthdays Dad' - Is more obvious, and so helps someone that would hack into your email.  'Birthdays PP' is a good clue if there is only one person initialed PP who you know their birthday.
+  'sinpin' - social insurance number and pin without space (recommended).  'sin pin' - with separating space
+
+
+)
+
+
+ 
+Lab Section Clue sheet for text lists
+  
+Lists of names you remember how to spell are great.  All text you enter in passphrases is case sensitive.
+
+If you had friends in 1998: Peter Parker, Paul Simonejicachek, and Mary (don't remember last name one of their spouses), your clue sheet entry would be:
+
+'friends 98: PPP(S)andM' - You are avoiding entering the parts of names that you either can't spell or don't remember.  For people, you usually do not need to write a 'friends' qualifier.  If you group some initials together with a year cue, you should be able to place the people in the group.  The clue 'PPP(S)andM' (without friends 98: hint) might also be enough of a clue if you remember them well, and remember that S is hard to spell, and no one ever knew M's last name.
+
+The entry in the text list would be: 'PeterParkerPaulMary' .  Anything inside () in your clue sheet would be ommitted.  A ? is also useful for a detail you don't remember, and would also naturally be ommitted even if you remember it later.  Lower case letters are cues to be ommitted if they are part of sentence or describing relationship (and).
+
+It should usally help your memory to separate groups of friends/people with spaces.  Often male and female friends form natural groups.
+
+)
+
+Lab Section Other examples
+If you had cars and hobbies from the 1990s, you can usually group them into one long list where vehicles are separated by spaces with other hobby items.
+
+Assuming you had an 89 Ford Taurus, Chevy Camaro, Honda Accord and 97 Honda Prelude , you can use the code _ to indicate a blank to provide. () still means to ommit the item.  lower case letters provide a cue for other details but not repeated.  'my' for instance would prompt for model year.  'clr' might prompt for colour. 
+
+'car and hobby 90S: (F)_my(C)_(H)A(H)Pmy ...' would cue the passphrase - 'Taurus89CamaroAccordPrelude97 ...' where ... is for other hobby items.
+
+'breed name 04:[' - if you had a pet doberman name Bob in 2004, this cue would ask for the breed and pet name:  'Doberman Bob' (Always Proper Case List Words out of convenience.)
+
+You can make the cue sheet very easy if you have a bad memory or throw in some of the curve balls I've shown.
+)
+NB. You should not include public information in your passphrases, but for further illustration of making your own categories and notes.
+'US Pres 60-75: JfK(Lb)J Rm_?F' ; 'John KennedyJohnson Richard NixonFord'; 'spacing is implicit if both names of a person are requested.  Must be explicit between names.  Forgotten parts of names are always ommitted. _ is blank for you to fill in from remaining cues'
+
+'1980-2010: (R)R (Ghw)B BC (Gw)B (Bh)O' ; 'Reagan Bush Bill Clinton Bush Obama'; 'Avoid any parts of names you would misspell.  Usually no need to avoid spaces'
+
+NB. passphrase is entered as words followed by numbers
+
+ splitpw 'John KennedyJohnson Richard NixonFord Reagan Bush Bill Clinton Bush Obama 12312914 9112001' NB.password format: words then numbers
+
+ splitpwToN 'John KennedyJohnson Richard NixonFord Reagan Bush Bill Clinton Bush Obama 12312014 9112001' NB. Consolidates password to a single number
+
+
+
+
 NB. =========================================================
 Lab Section
-  Enter a list of favorite numbers in popup.  If you inspect the favorites variable (by typing 'favorites' and pressing enter) it will show up on screen and is less secure if somone can see over your shoulder.
+  A list of "favorite numbers" will be created from the phrase you type in the popup window.  If you inspect the favorites variable (by typing 'favorites' and pressing enter) it will show up on screen and is less secure if somone can see over your shoulder.
 
-  An alternate generation format has been provided (commented with leading NB .) .  The alternate format should end with a number between 0 and 32 .
+  favorite numbers is a name for a "hash salting" process I've developed.  Salts make passwords more secure, and there is no reason to think this process is less secure than others, and reasons to believe it is more.
 
-  To use the alternate format, edit the line to remove the NB ., and then press enter twice.  If fewer people use the alternate format, then it might be safer.  Though it is not as recommended.
+  All of the information you enter for PASSWORD #1 will be destroyed on exiting this program.  None of the raw information will ever be readable by anyone else.  The purpose is to generate a 1000+ bit (300 digit) number that is unique in the world, but can also be created on your other (or new) computers.  This is a one way hash function that cannot recover the original info form the large number.  You need to remember this information if only because you will have a new computer within the next 50 years.  So it is highly recommended to also create a clue sheet mentioned above.
 
-  A good way to write down phrase information is to code it in such a way that only you know the answers to all of the questions/clues written down.
+  If you have not already written a clue sheet using the enc function in previous section, you are encouraged to open a text editor (say Notepad) or email program to write the cue sheet before completing the input box.
 
-  girl/boy friends with a cued year.  pets with cued year.  initials to expand.  Abbreviations (with personal meaning) with cue to expand.  
+  TECHNICAL DETAILS: everything is case sensitive.  Words are separated by spaces.  Punctuation is not recommended.  single quotes ' are stripped.  Numbers and numeric conversion of words that are multiples of 14 have the multiple of 14 stripped out of them if the total passphrase length is longer than about 380 bits.
 
-  Not good choices for cues are favorite movie/food/colour, because those can change over the years.  
-
-  All of the information you enter for PASSWORD #1 will be destroyed on exiting this program.  None of the raw information will ever be readable by anyone else.  The purpose is to generate a 512 bit (154 digit) number that is unique in the world.  This is a one way hash function that cannot recover the original info form the large number.  The reason you need to be able to remember this information is if you want to add it on another computer, or this computer is unusable.
-
-  Follow a structured format.  Your name with middle names/initials is a good start. Date of birth is good too. (One feature of this system is the ability to prove that you created the original key, and so Name and Date of birth as part of the passphrase helps to do this). But include information that only you know as well.  write clues on paper, but also email yourself the clue sheet.  Title email 'Note to self' 
-
-  Everything you enter is case sensitive, and any leading or trailling spaces are meaningful too.  You may use unicode characters (French/German accents Arabic Asian alphabets), but I have no idea if it would be complicated to read them 20 years from now.
-
+  In chapter 8 of this lab there is a tool to help your memory, and narrow down options and formatting, if you cannot remember everything some years later.
+ 
   If you are following recommendations, THIS IS PASSWORD #1.  
 )
-jpath '~temp'
-NB. favorites =:  (((i.32) + {:@:(0&{::)) { [: s512 listhash [: , ": &>) splitpw wd 'mb input text "favorites key generator" "word(s) followed by space and number(or last one) below 32" '
-favorites =: s512 listhash wd 'mb input text "PASSWORD #1 (salt)" "A long password unlikely to be used by anyone else in the world" '
+
+
+favorites =: fb64^:2 listhash (FULLNAME , ' ' , DOB  , ' ' , LOCATIONS ) FRCparse FavoritesN =: splitpwToN wd 'mb input text "PASSWORD #1 (salt)" "Place answers for cue sheet.  Words followed by numbers" '
 pathcreate APPDATA , 'keys'
   (APPDATA , 'keys/salt.settings')fwrite~  3!:1 favoritesF =: > ;@:(rollpad@:#22 b.each<)each < (32# 256) Slowbytes 'x ', ": 32{.favorites NB. random numbers on disk for use as salts
 NB. =========================================================
@@ -235,17 +371,23 @@ Lab Section System key
   
   Public cryptography allows you to use services without any other party ever knowing/storing private information (private keys or passwords).  There is no username ever needed, only a single signin number, and so "signing in" can be done securely and automatically.
 
-  First a demonstration of the security of short passwords
+  In next section, A window will pop up asking you to enter a password followed by a number. Below are examples of valid password formats. The right end of the line must be numbers, and there must be a space between the rightmost number and any letters.
 )
 PREPARE
 load 'openssl.ijs'
 PREPARE
 
+NB. valid password formats
+  splitpw 'A valid phrase 42 1 2 3'
+  splitpw 'St1l1 va71d 42 1234'
+  splitpw 'St 1 11  va71d 42 '
+
+NB. examples that show small password variations produce very different output.
   parsepw 'a 1'
 
   parsepw 'a 2'
 
-  a. {~ b64hash s256 parsepwC 24 'a 1'
+
 NB. =========================================================
 Lab Section
   The above shows that even simple passwords with minor differences generate complex keys unrelated to each other.  An attacker would need to find out your favorite numbers, and break the SHA512 algorithm to know the output of your password function.  No information about your favorite numbers can possibly be deduced from your computed password, and your favorite numbers will be erased (unless you choose to save them) when you close this program
@@ -254,13 +396,15 @@ Lab Section
 
   It should be easy to remember, but hard for someone (even if they know you) to be able to guess it.  (If a short password, avoid dictionary or common words)
 
-  The more common you think your favorite numbers (passphrase) might be, the longer and more unusual you should make your password#2.
+  This password #2 is only used to safeguard password #1 and the cue sheet you made.  If you are sure that password #1 is very secure, then you can use a common password.  But next paragraph is recommended.
 
-  The display will print some Public information about your key is displayed when done (as a cue that it is done), but some bits are cut off.
+  If you make this password 6 letters and 2 numbers or more, then you can reuse it safely for password #3 and #4, and reusing it will make it more memorable.
+
+  The display will leak some private information but it is safe from people peering over your shoulder.
 
   THIS MAY TAKE A MINUTE OR SO. PASSWORD #2
 )
-  syskey =: 894 gencompressedN 256x #. parsepw wd 'mb input text "enter password" "password: " '
+  syskey =: 894 gencompressedN 256x #. fb64^:2 listhash (FULLNAME , ' ' , DOB  , ' ' , LOCATIONS ) FRCparse FavoritesN splitpwToN wd 'mb input text "enter password" "password: " '
 
 NB. =========================================================
 Lab Section 
@@ -288,7 +432,7 @@ Your personal key is 1214 bits long compared to the 894 bits of the system key.
 THIS WILL TAKE A BIT LONGER THAN Previous key generation.  PASSWORD #2 or PASSWORD#2b if #2 is short.
 )
 
-perskey =: 1214 gencompressedN 256x #. parsepw wd 'mb input text "enter password" "password: " '
+perskey =: 1214 gencompressedN 256x #. fb64^:2 listhash (FULLNAME , ' ' , DOB  , ' ' , LOCATIONS ) FRCparse FavoritesN splitpwToN wd 'mb input text "enter password" "password: " '
 
 NB. =========================================================
 Lab Section
@@ -308,7 +452,6 @@ NB. =========================================================
 Lab Section  Saving keys
  Your keys will now be saved to disk.  We are encrypting them further to prevent snooping on your disk, or loss of your computer.
 
- A commented line also enables you to lazily save your "favorites" (password salt) to disk though you may save the password that generated them in some other way, or ideally can remember it within a few attempts.
 
  The decision to save Favorites can cause an extra attack vector if your computer has unauthorized access.  On the other hand, it can provide a backup in case you forget PASSWORD #1
 
@@ -333,7 +476,7 @@ NB. IF THIS OPERATION TAKES A LONG TIME, SEE LAST PARAGRAPH OF ABOVE TEXT.  yOU 
 
 
 
-'uncomment and run the above to save favorites (not necessary)'
+
 
 NB. =========================================================
 Lab Section

@@ -94,7 +94,7 @@ indexinPrimeMod =: 4 : 0 NB. find the compressible index of x within list of Pri
 )
 compressRSA =: 3 : 0
 NB. uses serpinski series c + k * 2&^ n
-NB. where n is at least 25.4694 and at most rsa bits with more likelyhood of being small than large
+NB. where n is at least 25.4694 and a t most rsa bits with more likelyhood of being small than large
 NB. k is odd. at least bits % 2^n at most bits % 2^n-1
 NB. c is a number in list ((*/2 3 5 7 11 13 17) * i.91) +/ PrimeMod 2 3 5 7 11 13 17
 (<. pD 2x ^. y) $: y
@@ -121,3 +121,47 @@ nextprimeQ =: quicknextcandidate^:(-.@(MillerRabinQ))^:_@:quicknextcandidate
 nextprimeQ1 =: quicknextcandidate^:(-.@(MillerRabinQ1))^:_@:quicknextcandidate
 nextprimeF =: quicknextcandidate^:(-.@(Fermat))^:_@:quicknextcandidate
 nextprimeFQ =: quicknextcandidate^:(-.@(FermatQ))^:_@:quicknextcandidate
+
+NB. from http://en.wikipedia.org/wiki/Spigot_algorithm where x is 2, and y is k'th bit of ln 2
+NB. can be used with any x.  slow with large y.  Produces wide fractional number (randomish)
+ iofLn =: (([: +/ [: % ((1+i.11) ^~ [) * (1+i.11) + ]) + 1 | [: +/ >:@:i.@] %~ >:@:i.@] | [ ^ ] - >:@:i.@])~"0 0
+NB.  #: 2x (256&( <.@*))@:iofLn 77
+NB. 412123123123111112123x (4294967296&([ | <.@*))@:iofLn 43
+NB. 16x (256&( <.@*))@:iofLn"0~ 4118 + i.16 16
+NB. x is bits y is seed
+bitsLnRNG =: (2x^[) ([ | <.@*) <.@-:@:x:@:[ iofLn ]
+bitsLnRNGSlow =: 1 : '(2x^{. x: m)  |  (+/ x: m) bitsLnRNG x:'
+
+NB.require 'openssl'
+enc2 =:  ~.@:[ /:~ ] </.~ #@:] $ [ 
+enc =: ;@:enc2
+split =: ] </.~ ~.@:[ #~ ~.@:[ /:~ [: #/.~ #@:] $ [
+pop=: 4 : 'o=. i.0  for_i. x do. y=. }. each amend i y [ o=. o,{. i {:: y  end. y (,<) o'
+dec =:  >@{:@:(($~ #) pop  split)
+
+genkey =: (0,~>: i.13) (] ,~ [ #~ -.@e.) 14 #.inv */@:x:  NB. generates anagram key at least 13 base-14 digits long 8e14+ possibilities.
+encB =: [: tb64 genkey@:[  enc  ] NB. functions to simplify use with numeric keys.
+decB =: genkey@:[ dec fb64@:]
+encB3 =: encB^:3 
+decB3 =: decB^:3
+encX =: ([: tb64 (genkey@:[  enc  ]) (22 b.)&.(a.&i.)  a. {~ (127 , #@:]) bitsRndR2~ 14 #. genkey@:[)
+decX =: (genkey@:[ dec fb64@:] (22 b.)&.(a.&i.)  a. {~ (127 , #@:fb64@:]) bitsRndR2~ 14 #. genkey@:[)
+ 
+NB. words numbers password format. returns product after conversion.
+splitpwToN =: 1&$: : (*  [: */@:(x:@:(0&{::) , [: ; [: (256x #.  a.&i.) each [: ;: 1&{::) splitpw)
+Nproof =: 14x #. 100 {. genkey
+FRCparse =:  4 : 0 
+NB.'n t' =.  y
+NB.pD ,. q: each n =. (x: n) , ; (256x #.  a.&i.) each ;: t 
+'cannot be 0 in list' assert 0 < pD 2 ^.*/ y  [ pD 'key bits:'
+ 'n14 nn' =. 14 100 {. each < genkey y
+NB.genkey 
+NB.pD 'proof key ' ,": 14 #. nn
+NB. 'should be a total of at least 5 words+numbers' assert 4 < # n 
+o =. (14x #. nn) encB3 100  $^:(> #) a=. x , ' ', n14 encB x 
+pD 'plaintext: ',  a
+NB. pD (14x #. nn) decB3 o
+'Decryption check failed: ' assert (100  $^:(> #) a ) -:  (14x #. nn) decB3 o
+o
+ 
+)
