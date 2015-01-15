@@ -596,7 +596,7 @@ Lab Section
   If either of your 2 PUBKEYS are 0, or not numbers, then you likely have not followed instructions to create them above, and you should restart.
 )
 ,. a.&i. each PUBKEYS
-EMAIL ; PUBKEYS , NAME;(<LOCATIONS), < LANGUAGES
+,. EMAIL ; (tb64 each PUBKEYS) , NAME;(<LOCATIONS), < LANGUAGES
 
 
 NB. =========================================================
