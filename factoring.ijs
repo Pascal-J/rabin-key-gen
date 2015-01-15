@@ -139,7 +139,7 @@ split =: ] </.~ ~.@:[ #~ ~.@:[ /:~ [: #/.~ #@:] $ [
 pop=: 4 : 'o=. i.0  for_i. x do. y=. }. each amend i y [ o=. o,{. i {:: y  end. y (,<) o'
 dec =:  >@{:@:(($~ #) pop  split)
 
-genkey =: (0,~>: i.13) (] ,~ [ #~ -.@e.) 14 #.inv */@:x:  NB. generates anagram key at least 13 base-14 digits long 8e14+ possibilities.
+genkey =: (0,~>: i.13) (] , [ #~ -.@e.) 14 #.inv */@:x:  NB. generates anagram key at least 13 base-14 digits long 8e14+ possibilities.
 encB =: [: tb64 genkey@:[  enc  ] NB. functions to simplify use with numeric keys.
 decB =: genkey@:[ dec fb64@:]
 encB3 =: encB^:3 
@@ -149,19 +149,26 @@ decX =: (genkey@:[ dec fb64@:] (22 b.)&.(a.&i.)  a. {~ (127 , #@:fb64@:]) bitsRn
  
 NB. words numbers password format. returns product after conversion.
 splitpwToN =: 1&$: : (*  [: */@:(x:@:(0&{::) , [: ; [: (256x #.  a.&i.) each [: ;: 1&{::) splitpw)
-Nproof =: 14x #. 100 {. genkey
+Nproof =: 14x #. [: ({.~  100 <. 4r5 >.@* #) genkey
 FRCparse =:  4 : 0 
 NB.'n t' =.  y
 NB.pD ,. q: each n =. (x: n) , ; (256x #.  a.&i.) each ;: t 
 'cannot be 0 in list' assert 0 < pD 2 ^.*/ y  [ pD 'key bits:'
- 'n14 nn' =. 14 100 {. each < genkey y
+ nn =. ({.~  100 <. 4r5 >.@* #) genkey y
+ n14 =. genkey 14#. 14 {. genkey y
 NB.genkey 
 NB.pD 'proof key ' ,": 14 #. nn
 NB. 'should be a total of at least 5 words+numbers' assert 4 < # n 
-o =. (14x #. nn) encB3 100  $^:(> #) a=. x , ' ', n14 encB x 
+o =. (14x #. nn) encB3 100  $^:(> #) a=. x , ' ', n14 encB (# n14) $^:(> #)  x 
 pD 'plaintext: ',  a
 NB. pD (14x #. nn) decB3 o
 'Decryption check failed: ' assert (100  $^:(> #) a ) -:  (14x #. nn) decB3 o
 o
- 
+
+)
+FRCproof =: 4 : 0 NB. pass Nproof y (of FRCparse)
+ nn =.genkey y
+NB. n14 =. genkey 14#. 14 {. 14#. inv y
+n14 =. genkey 14 #. 14 {. genkey y
+ o =. (14x #. nn) encB3 100  $^:(> #) a=. x , ' ', n14 encB (# n14) $^:(> #)  x 
 )

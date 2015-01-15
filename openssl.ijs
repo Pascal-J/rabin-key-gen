@@ -344,7 +344,7 @@ bitsRndS =: ([: 9!:1  (2x^31) | [ [ [: (9!:43) 1:) bitsRnd@] ]
 bitsRndC =: 4 : 0 NB. x is seed y is bits
 xp =. 2x >.@%~ {.y
 x =. x: x
- x initRND~ s =.  xp ((],{:@:] ) {~   1 i.~ <)  31 61 89 107 127 521 607 1279 2203x
+ x initRND~ s =.  xp ((],{:@:] ) {~   1 i.~ <:)  31 61 89 107 127 521 607 1279 2203x
 NB. pD seed
 NB.s initRND (bitsRnd + rollbits) (+ ?) xp
 s initRND (bitsRnd + rollbits)  (+ ?) xp
@@ -358,14 +358,14 @@ o [ 61 initRND seed|~ 2x^48
 bitsRndR =: 4 : 0 NB. x is seed y is bits
 xp =.  {.y
 x =. x: x
- x initRND~ s =.  xp ((],{:@:] ) {~   1 i.~ <)  31 61 89 107 127 521 607 1279 2203x
+ x initRND~ s =.  xp ((],{:@:] ) {~   1 i.~ <:)  31 61 89 107 127 521 607 1279 2203x
  (bitsRnd + rollbits) y NB. can overflow requested bits.  use roll instead for specific range.
 )
 
 bitsRndR2 =: 4 : 0 NB. x is seed y is bits, then num bytes to return
 xp =.  {.y
 x =. x: x
- x initRND~ s =.  xp ((],{:@:] ) {~   1 i.~ <)  31 61 89 107 127 521 607 1279 2203x
+ x initRND~ s =.  xp ((],{:@:] ) {~   1 i.~ <:)  31 61 89 107 127 521 607 1279 2203x
  rollbits 8 #~ }. y NB. can overflow requested bits.  use roll instead for specific range.
 )
 

@@ -361,8 +361,21 @@ Lab Section
 
 
 favorites =: fb64^:2 listhash (FULLNAME , ' ' , DOB  , ' ' , LOCATIONS ) FRCparse FavoritesN =: splitpwToN wd 'mb input text "PASSWORD #1 (salt)" "Place answers for cue sheet.  Words followed by numbers" '
-pathcreate APPDATA , 'keys'
-  (APPDATA , 'keys/salt.settings')fwrite~  3!:1 favoritesF =: > ;@:(rollpad@:#22 b.each<)each < (32# 256) Slowbytes 'x ', ": 32{.favorites NB. random numbers on disk for use as salts
+
+  2 ^.  FavoritesN
+
+Lab Section Optional check
+ If the last line above is not a number above 120 , then your passphrase is short enough to be hacked in a determined attack.  A number below 120 (bits) may lose the ability to prove authorship of your keys, and your lists may be too short to prevent others from knowing all of the answers.
+
+ Ideally your list of words and numbers should be longer than 5 words and your birthday, though the main point is that they not be guessable.  So a number of bits close to 120 may be adequate.
+ 
+ you may want to optionally rerun the previous line above (place cursor on line starting with favorites =: then press enter twice) and enter a longer passphrase.
+
+)
+  2 ^.  FavoritesN
+ 
+
+
 NB. =========================================================
 Lab Section System key
   The above process also created some random numbers on your disk that can be used to assist password recovery of your favorites (But only if you guess it right among a few tries).  These numbers are also used to protect your other passwords.
@@ -376,6 +389,9 @@ Lab Section System key
 PREPARE
 load 'openssl.ijs'
 PREPARE
+
+pathcreate APPDATA , 'keys'
+  (APPDATA , 'keys/salt.settings')fwrite~  3!:1 favoritesF =: > ;@:(rollpad@:#22 b.each<)each < (32# 256) Slowbytes 'x ', ": 32{.favorites NB. random numbers on disk for use as salts
 
 NB. valid password formats
   splitpw 'A valid phrase 42 1 2 3'
