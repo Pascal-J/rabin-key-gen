@@ -497,7 +497,7 @@ NB. slow to stop brute force guessing.
 Slowbytes =:  4 : 0 NB.x is numbytes # bytes (or range), y is passphrase in splitpw format
 'n p' =. splitpw y
 bits =. 129 + ^:> >: {: n
-(bits ,~ s512 bighash ; ": expandpwF&>/ splitpw y) lcGPrime x
+(bits ,~ s512 bighash ; ": expandpw&>/ splitpw y) lcGPrime x
 )
 
 lcGPrime2 =: 1 : 0 NB. Gens a prime lcg based on seed and bits , but with y (constant) slowdown factor

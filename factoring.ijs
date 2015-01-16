@@ -150,12 +150,13 @@ decX =: (genkey@:[ dec fb64@:] (22 b.)&.(a.&i.)  a. {~ (127 , #@:fb64@:]) bitsRn
 NB. words numbers password format. returns product after conversion.
 splitpwToN =: 1&$: : (*  [: */@:(x:@:(0&{::) , [: ; [: (256x #.  a.&i.) each [: ;: 1&{::) splitpw)
 Nproof =: 14x #. [: ({.~  100 <. 4r5 >.@* #) genkey
-FRCparse =:  4 : 0 
+FRCparse =:  4 : 0 NB. use Nproof y to hide original key.
 NB.'n t' =.  y
 NB.pD ,. q: each n =. (x: n) , ; (256x #.  a.&i.) each ;: t 
 'cannot be 0 in list' assert 0 < pD 2 ^.*/ y  [ pD 'key bits:'
- nn =. ({.~  100 <. 4r5 >.@* #) genkey y
- n14 =. genkey 14#. 14 {. genkey y
+ NB. nn =. ({.~  100 <. 4r5 >.@* #) genkey y
+ nn =.genkey y
+ n14 =. genkey 14#. 14 {. nn NB.genkey y
 NB.genkey 
 NB.pD 'proof key ' ,": 14 #. nn
 NB. 'should be a total of at least 5 words+numbers' assert 4 < # n 

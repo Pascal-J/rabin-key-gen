@@ -360,7 +360,7 @@ Lab Section
 )
 
 
-favorites =: fb64^:2 listhash (FULLNAME , ' ' , DOB  , ' ' , LOCATIONS ) FRCparse FavoritesN =: splitpwToN wd 'mb input text "PASSWORD #1 (salt)" "Place answers for cue sheet.  Words followed by numbers" '
+favorites =:   256 | _3 +/\  fb64 listhash (FULLNAME , ' ' , DOB  , ' ' , LOCATIONS ) (] encX FRCparse) FavoritesN =: splitpwToN wd 'mb input text "PASSWORD #1 (salt)" "Place answers for cue sheet.  Words followed by numbers" '
 
   2 ^.  FavoritesN
 
@@ -391,7 +391,7 @@ load 'openssl.ijs'
 PREPARE
 
 pathcreate APPDATA , 'keys'
-  (APPDATA , 'keys/salt.settings')fwrite~  3!:1 favoritesF =: > ;@:(rollpad@:#22 b.each<)each < (32# 256) Slowbytes 'x ', ": 32{.favorites NB. random numbers on disk for use as salts
+  (APPDATA , 'keys/salt.settings')fwrite~  3!:1 favoritesF =: > ;@:(rollpad@:#22 b.each<)each < (32# 256) Slowbytes 'x ' , ": 32{. favorites NB. random numbers on disk for use as salts
 
 NB. valid password formats
   splitpw 'A valid phrase 42 1 2 3'
@@ -420,7 +420,11 @@ Lab Section
 
   THIS MAY TAKE A MINUTE OR SO. PASSWORD #2
 )
-  syskey =: 894 gencompressedN 256x #. fb64^:2 listhash (FULLNAME , ' ' , DOB  , ' ' , LOCATIONS ) FRCparse FavoritesN splitpwToN wd 'mb input text "enter password" "password: " '
+PREPARE
+load 'openssl.ijs'
+PREPARE
+
+  syskey =: 894 gencompressedN 256x #. fb64^:2 listhash (FULLNAME , ' ' , DOB  , ' ' , LOCATIONS ) FRCparse Nproof FavoritesN splitpwToN wd 'mb input text "enter password" "password: " '
 
 NB. =========================================================
 Lab Section 
@@ -448,7 +452,7 @@ Your personal key is 1214 bits long compared to the 894 bits of the system key.
 THIS WILL TAKE A BIT LONGER THAN Previous key generation.  PASSWORD #2 or PASSWORD#2b if #2 is short.
 )
 
-perskey =: 1214 gencompressedN 256x #. fb64^:2 listhash (FULLNAME , ' ' , DOB  , ' ' , LOCATIONS ) FRCparse FavoritesN splitpwToN wd 'mb input text "enter password" "password: " '
+perskey =: 1214 gencompressedN 256x #. fb64^:2 listhash (FULLNAME , ' ' , DOB  , ' ' , LOCATIONS ) FRCparse Nproof FavoritesN splitpwToN wd 'mb input text "enter password" "password: " '
 
 NB. =========================================================
 Lab Section
@@ -537,7 +541,7 @@ Lab Section Name
 )
 ] NAME =: ;: inv ({. , [: {.each {:);: FULLNAME
 
-] LOCATIONS =: ';' cut LOCATIONS
+] LOCATION =: ';' cut LOCATIONS
 
 NB. =========================================================
 Lab Section Location
@@ -596,7 +600,7 @@ Lab Section
   If either of your 2 PUBKEYS are 0, or not numbers, then you likely have not followed instructions to create them above, and you should restart.
 )
 ,. a.&i. each PUBKEYS
-,. EMAIL ; (tb64 each PUBKEYS) , NAME;(<LOCATIONS), < LANGUAGES
+,. EMAIL ; (tb64 each PUBKEYS) , NAME;(<LOCATION), < LANGUAGES
 
 
 NB. =========================================================
