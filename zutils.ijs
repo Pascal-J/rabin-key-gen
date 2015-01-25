@@ -95,7 +95,7 @@ v2c =: 1 : ' 2 : (''u '' , u lrA , '' v'')'
 a2d =: 1 : 0 NB. turns adverb into dyad (so that rank or other modifiers can be applied to it).  adv must take noun arg.
 4 : ('x ', u ,' y')
 )
-a2d =: 1 : '4 : (''x '', u ,'' y'')'
+a2d =: 1 : '4 : (''x ('', u ,'') y'')'
 a2v =: 1 : 0 NB. for dyad adverb, where adverb takes noun arg.  ie (3 1,: 6 2) '}' a2v reduce i.5
 4 : ('''a b'' =. x label_. a (b(', u  , ')) y')
 )
@@ -219,7 +219,8 @@ booltest=: [: -. [: *./ 0 = ,
 scalarize =: {.^: ((,1) -: $) NB. 3 : ' if. (1=$)y do. {.y end.'
 linearize =: (, $~ 1 -.~ $) 
 stripEmptyTrail =: }:^:(a: = {:)
-strbracket =: 0&{::@:[ , ] , 1&{::@[
+strbracketF =: 0&{::@:[ , ] , 1&{::@:[
+strbracket =: (0&({)@:[ , ] , 1&({)@:[)
 strbracketC =: 2 : 0
 1 : ( '''' , m , ' ''' , ', (": u lrA) ,' , ''' ', n ,'''')
 )

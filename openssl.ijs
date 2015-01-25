@@ -505,7 +505,7 @@ lcGPrime2 =: 1 : 0 NB. Gens a prime lcg based on seed and bits , but with y (con
 p=. 11 + 12 * s bitsRndR bits
 while. -.@MillerRabinQW p do. p =. 11 + 12 * rollbits bits end.
 NB. lcG4 =: 2 : ' ] |  n (][ [ assign ( {.@RawRnd31@1:) + ]) (n~ + 48271x)  ((1-~2x^m) |  *) 3 : n'
-roll =: (] | 'seed' (][ [ assign ( {.@RawRnd31@1:) + ]) ((y,~ bits-8) bitsLnRNGSlow  +/ (256 * RawRnd31 2) | p , seed) (p|*) 3 : 'seed')"0
+roll =: (] | 'seed' (][ [ assign ( {.@RawRnd31@1:) + ]) ((y,~ bits-8) bitsLnRNGSlow  +/ (x:^:(-. IF64) 256 * RawRnd31 2) | p , seed) (p|*) 3 : 'seed')"0
 seed
 )
 NB. slow to stop brute force guessing.
@@ -572,10 +572,13 @@ r =. n|fq+fp
 s =. n|fp-fq
 r, (n-r), s, (n-s)
 ) 
-
-Pad =: ] * 2x ^ [
-UnPad =: (2x ^ [) ([ %~ ] #~ 0 = |) ]
-
+RPad =: ?@(10x^[) ,~&.(10&#. inv) ]
+RPad =: 10 #. ([ (] #:~ 10 #~ [) ?@(10x^[)) ,~  10 #. inv ]
+UnRPad =: 10 #. [ ((#@:] - [) {. ]) 10 #. inv ]
+Pad2 =: ] * 2x ^ [
+UnPad2 =: (2x ^ [) ([ %~ ] #~ 0 = |) ]
+Pad =: [ Pad2 3 RPad ]
+UnPad =: 3 (UnRPad linearize) UnPad2 
 RWdparams =: 3 : 0 NB. */ ,] , ({. | {: ^2-~{.), ] | 2 ^ 8 %~ 11 5 -~ 9 3 * ] NB. y is pq. returns williams precomputes
 'p q' =. y
  'a b'=. 8 %~ 11 5 -~ 9 3 * y
