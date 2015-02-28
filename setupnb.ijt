@@ -10,7 +10,7 @@ NB. =========================================================
 Lab Section Intro
   This lab shows how to setup natbit and create encryption keys
 
-  can be run with: lab_jlab_ jpath '~/natbit/', 'setupnb.ijt' (open a random lab to have lab verb loaded)
+  can be run with: lab_jlab_ jpath '~/natbit/', 'setupnb.ijt' [ require 'labs/labs' 
 
   Chapters of this setup Lab are:
 
@@ -183,10 +183,12 @@ PREPARE
 'APPDIR APPDATA' =: 3!:2 fread    (1!:43 ''),'/', 'nbpath.settings'
 NB. 'APPDIR APPDATA' =: 3!:2 fread    (jpath '~install'),'/', 'nbpath.settings'
 1!:44 APPDIR
-load 'factoring.ijs'
+load 'factoring2.ijs'
 load 'zutils.ijs'
 favorites =: 1 2 3
-load 'openssl.ijs'
+load 'openssl2.ijs'
+coinsert 'rabin'
+coinsert 'cipher2'
 PREPARE
 
 NB. Eventual favorites/salt hash will look like this
@@ -205,14 +207,14 @@ NB. core anagramming Rail fence cypher.  (Actual encryption much more effective 
 
 NB. =========================================================
 Lab Section Personal details
-  Your (full) name and date of birth will never be discoverable from this system.  We use them as part of your key so that you may, if you choose to, prove that you authored this key, and to ensure uniqueness among people.
+  Your (full) name and date of birth will never be discoverable from this system.  Your partial name We use them as part of your key so that you may, if you choose to, prove that you authored this key, and to ensure uniqueness among people.
   
   the data is saved to a temporary variable, but will be destroyed when you exit this program.  This lab format allows you to inspect all executed instructions as they are run.
 
-  Enter your name the most normal way you would fill out a form. (include middle names or initials as you would normally do for a name request)
+  Enter your Partial name, usually 'Firstname Initial(s)'  This partial name will be part of the public record.  Your partial name will allow people you know to recognize you, but provides semi-anonymity.  Use any punctuation you wish, as re-entering it in future can be obtained from the public record.
 )
 
-FULLNAME =: wd 'mb input text "enter name" "Full name: " '
+FULLNAME =: wd 'mb input text "enter name" "Partial name: " '
 
 
 
@@ -229,16 +231,12 @@ FULLNAME =: wd 'mb input text "enter name" "Full name: " '
   NB. fuller scrambling of plaintext
   (genkey 9112001)  enc  FULLNAME , '2014/12/31 Locations(cities/regions)'
 
-Lab Section Date of birth
+Lab Section Year of birth
 
-  Enter your date of birth using space or -/ separators. (Ones you would normally use.  Use leading 0s only if you normally do)
-
-  If you use multiple date formats, use the NON-american one that you use the most.
-
-  Use the same date format you expect you would use 20 years from now.
+  Enter your year of birth with leading 2 digits
 )
 
-DOB =:  wd 'mb input text "enter date of birth" "Date of birth (/ separators): " '
+DOB =:  wd 'mb input text "enter year of birth" "Year of birth (4 digits): " '
 
  
    encB =: [: tobase64 genkey@:[  enc  ] NB. functions to simplify use with numeric keys.
@@ -387,7 +385,9 @@ Lab Section System key
   In next section, A window will pop up asking you to enter a password followed by a number. Below are examples of valid password formats. The right end of the line must be numbers, and there must be a space between the rightmost number and any letters.
 )
 PREPARE
-load 'openssl.ijs'
+favorites_passwords_ =: favorites
+
+load 'openssl2.ijs'
 PREPARE
 
 pathcreate APPDATA , 'keys'
@@ -421,7 +421,8 @@ Lab Section
   THIS MAY TAKE A MINUTE OR SO. PASSWORD #2
 )
 PREPARE
-load 'openssl.ijs'
+favoritesF_passwords_ =: favoritesF
+load 'openssl2.ijs'
 PREPARE
 
   syskey =: 894 gencompressedN 256x #. fb64^:2 listhash (FULLNAME , ' ' , DOB  , ' ' , LOCATIONS ) FRCparse Nproof FavoritesN splitpwToN wd 'mb input text "enter password" "password: " '

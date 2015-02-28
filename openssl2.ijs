@@ -1,4 +1,7 @@
 require 'dll'
+
+
+cocurrent 'hash'
 NB. require 'shards'
 sslp =: IFWIN pick '';'D:\OpenSSL-Win64\bin\'
 sslp =: IFWIN pick ''; '/',~ jpath '~bin'  NB. with J802.  cut this line if you wish to point to downloaded folder
@@ -22,16 +25,6 @@ sslSha1 =: (IFWIN {:: ' SHA1 > + x *c x *c';'SHA1 > x *c x *c')  ssl
 sslMD5 =: (IFWIN {:: ' MD5 > + x *c x *c';'MD5 > x *c x *c')  ssl
 
 
-tobyte64 =:  (8 # 256) #: ]
-tobyte32 =: (4 # 256) #: ]
-int32hash =: (_4 tobyte32 inv\ a.i.])@:
-int64hash =: (_8 tobyte64 inv\ a.i.])@:
-b64hash =: tobase64@:
-hexhash =: ( [: ,@:hfd a.i.])@:
-bighash =: (256x #. a. i. ])@
-listhash =: (a. i. ])@:  NB. fastest
-int64hash =: listhash ((_8 (256x&#.)\ ])@:) NB. slower but more compatible.
-int32hash =: listhash ((_4 (256x&#.)\ ])@:)
 
 
 sr160=: 3 : 0
@@ -83,15 +76,7 @@ s256=: 3 : 0
 sslSha256 (y);(#y);md=. 32#' '
 md
 )
-dfh =: 16x #. 16 | '0123456789ABCDEF0123456789abcdef' i. ]
 
-3 : 0 ''  NB. needs better fix for 32bit
-if. IFWIN *. -. IF64 do.
- s256 =: [: {&a. 256x #. inv [: dfh 'sha256'&gethash
- s512 =: [: {&a. 256x #. inv [: dfh 'sha512'&gethash
-end.
-1
-)
    gethashA =: 1 : 0
 y=. ,y
 c=. '"',libjqt,'" gethash ',(IFWIN#'+'),' i *c *c i * *i'
@@ -108,48 +93,29 @@ hmac =: 1 : 0  NB. constant blocksize 64. u is hashfunction that produces binary
  NB. dumb: ] ([: u {.@:] , [: u hexhash [ ,~ {:@:])  256x afd@:#. (92 54) (22 b.)/ 64 $ listhash [: u hexhash^:(64 > #) [
 ] ([: u {.@:] , [: u [ ,~ {:@:])  256x afd@:#. (92 54) (22 b.)/ 64 $ listhash [: u^:(64 > #) [
 )
-BNctxnew =: ' BN_CTX_new *l' ssl
-BNnew =: ' BN_new *i' ssl
-BNmul =: ' BN_mul i *x *x *x *x' ssl
-NB. BIGNUM *BN_bin2bn(const unsigned char *s,int len,BIGNUM *ret)
-BN2bn =: ' BN_bin2bn *x *c l *x' ssl
-NB. int	BN_bn2bin(const BIGNUM *a, unsigned char *to)
-BN2bin =: ' BN_bn2bin l *i *c' ssl
-BNnum_bytes=: ' BN_num_bytes i *x' ssl
-NB. char *BN_bn2dec(const BIGNUM *num)
-BN2dec=: ' BN_bn2dec c *i' ssl
-NB. int BN_dec2bn(BIGNUM **num, const char *str)
-dec2BN=: ' BN_dec2bn i *x *c' ssl
 
-dec2bn=: 3 : 0
- o =. >BNnew 0{.a.
-i=. dec2BN o;(":y)
-<o
-)
+coclass 'hashutil'
 
-bn2dec=: 3 : 'c=. BN2dec (y)'
+tobyte64 =:  (8 # 256) #: ]
+tobyte32 =: (4 # 256) #: ]
+int32hash =: (_4 tobyte32 inv\ a.i.])@:
+int64hash =: (_8 tobyte64 inv\ a.i.])@:
+b64hash =: tobase64@:
+hexhash =: ( [: ,@:hfd a.i.])@:
+bighash =: (256x #. a. i. ])@
+listhash =: (a. i. ])@:  NB. fastest
+int64hash =: listhash ((_8 (256x&#.)\ ])@:) NB. slower but more compatible.
+int32hash =: listhash ((_4 (256x&#.)\ ])@:)
 
+dfh =: 16x #. 16 | '0123456789ABCDEF0123456789abcdef' i. ]
+dfhx =: 16x #. 16 | '0123456789ABCDEF0123456789abcdef' i. ]
 
-
-bn2bin =: 3 : 0
-len =. BNnum_bytes y
-o =. len # '0'
-i =. BN2bin y;o
-o
-)
-bin2bn =: 3 : 0
-len =. # a=. 2 #. inv y
-
-o =. (len%8) #' '  NB.>BNnew 0{.a.file:///D:/j802/addons/graphics/bmp/bmp.ijs
-pD i =. BN2bn o;len;(a)
-pD i =. BN2bn o;len;''
-o
-)
-
-Bmul =: 4 : 0
-r =. BNnew 0
-pD i =. BNmul (r);(x);(y);BNnew 
-r
+3 : 0 ''  NB. needs better fix for 32bit
+if. IFWIN *. -. IF64 do.
+ s256 =: [: {&a. 256x #. inv [: dfh 'sha256'&gethash
+ s512 =: [: {&a. 256x #. inv [: dfh 'sha512'&gethash
+end.
+1
 )
 
 BASE64=: (a.{~ ,(a.i.'Aa') +/i.26),'0123456789+/'
@@ -164,16 +130,41 @@ tb64 =: ('=' #~  0 2 1 i. 3 | # )  ,~ BASE64 {~  [: #. _6  ]\    (8#2) ,@:#: a.&
 tob64 =: 3 : '(''='' #~  0 2 1 i. 3 | # y)  ,~ BASE64 {~  #. _6  ]\    (8#2) ,@:#: a.&i. y'
 t2b64 =: 3 : '(''='' #~  0 2 1 i. 3 | # y)  ,~ res=. BASE64 {~  #. _6  ]\    (8#2) ,@:#: a.&i. y'
 
+
+
+
 NB. =========================================================
 NB.*frombase64 v From base64 representation
 frombase64=: 3 : 0
 pad=. _2 >. (y i. '=') - #y
 pad }. a. {~ #. _8 [\ , (6#2) #: BASE64 i. y
 )
+
 fb64 =: (_2 >. ( i.&'=') - #) }. a. {~ [: #. _8 [\ [: , (6#2) #: BASE64&i.
 
-coinsert 'jtask'
 
+
+
+
+cocurrent 'z'
+
+pD_z_ =:  1!:2&2
+ORdef_z_ =: ".@[^:(_1< 4!:0@<@[)
+defaults1 =: ([`]@.(0=#@>@[))
+defaults =: defaults1"0 0 f.
+Boxlink =: boxopen each@:,&<
+rangei =: [ +  >:@] i.@- [
+NB. x is low;high boxed an additional layer if they will be compared to boxed data.
+takerange =: 4 : ('''a b'' =. x';'(a i.~ y) rangei b i.~ y')
+
+
+NB. appdir =: 'DIR_application_' ORdef jpath '~system'
+
+
+coclass 'opensslrsa'
+coinsert 'jtask'
+coinsert 'factoring'
+coinsert 'passwords'
 Cdefs =: 0 : 0
 
 typedef int evp_sign_method(int type,const unsigned char *m,
@@ -185,20 +176,6 @@ typedef int evp_verify_method(int type,const unsigned char *m,
 
 )
 
-
-
-
-pD_z_ =:  1!:2&2
-ORdef_z_ =: ".@[^:(_1< 4!:0@<@[)
-defaults1 =: ([`]@.(0=#@>@[))
-defaults =: defaults1"0 0 f.
-Boxlink =: boxopen each@:,&<
-rangei =: [ +  >:@] i.@- [
-NB. x is low;high boxed an additional layer if they will be compared to boxed data.
-takerange =: 4 : ('''a b'' =. x';'(a i.~ y) rangei b i.~ y')
-dfhx =: 16x #. 16 | '0123456789ABCDEF0123456789abcdef' i. ]
-
-appdir =: 'DIR_application_' ORdef jpath '~system'
 
 newandgetrsa =: 4 : 0
 y =. >y defaults < appdir ,'/nbmember'
@@ -275,31 +252,9 @@ NB.'m d p q e1 e2 c' =. ([: dfhx@:,@:> [: }:^:(':' = {:) each [: (#~ 0 ,@:-.@:=$
 m;d;p;q;e1;e2;c
 )
 
-intpower=: 3 : 0
-2x intpower y
-:
-a=. 1 [ xp=. x
-for_k. |. }. #: y do.
-  if. k do. a=. a*xp end.
-  xp=. *: xp
-end.
-a*xp
-)
-afd =: (a.{~ 256&#. inv) f. 
-dfa =: (256x #. a. i. ]) 
-modpow =: 4 : 'x y&|@^ 65537'
-modexp =: 1 : (':';'x m&|@^ y')
 
-imw=: ((2&{ - {. * 4&{ <.@% {:),(3&{ - 1&{ * 4&{ <.@% {:), 2&{., ({: | 4&{) ,~{:)^:(0 ~: {:)
-invmod=: 4 : 0
-NB. inverse of y mod x (x|y)
-NB. uc vc ud vd d c  where d c init as x y
-NB. q =. d<.@%c -- (4&{ <.@%~ {:)
-a=. imw^:_ ] 1x,0x,0x,1x,x,y
-if. 1~: 4{a do. 0 return. end. NB. returns 0 if no inverse
-if.0< 2{ a do. 2{ a else. x+2{a end.
-)
-
+coclass 'passwords'
+NB. favorites is external variable.  reload after set.
 expandpw1 =: 256&$@:(255&- ,])@: ( favorites  ([ (, ,) (22 b.)"0 1 , ])  (a. i. ]) ) 
 expandpw2 =: 256&$@:(255&- ,])@: ( ([: ; 256 #.inv each [)  ([ (, ,) (22 b.)"0 1 , ])  (a. i. ]) ) 
 expandpw3 =: 5 32&$@:(255&- ,])@: (  (favorites ,~ [: ; 256 #.inv each [)  ([ (, ,) (22 b.)"0 1 , ])  (a. i. ]) ) 
@@ -313,6 +268,10 @@ parsepw =:  s512 parsepwC 61
 splitpw =:  (;: inv@:}: ;~  a:&+^:(-: 0:)@:(0&".)@:>@:{:)@:;:@:(-.&'''' ) :: ('needs a trailing number greater than 0'"_)
 itemsbetween =: 2 : '((m >:@i.~ y) , n <:@i.~ y) (takerange { ]) y'
 
+
+coclass 'RNG'
+coinsert 'passwords'
+coinsert 'factoring'
 NB. secure RNG depends on whether numbers are published or discoverable.  Returned number range should be 30 bits less than period for basic security, but there are ways of guessing seed range.
 NB. adding to gbflip allows a period increase of 2^55.
 lcG =: 2 : '( ] | n assign (1-~2x^m) | 48271x * 3 : n)"0'  NB. generates a random generator verb using a var ('seed') as n.  m should be a mersenne prime exp, 31 61 89 107 127 521 607
@@ -371,6 +330,53 @@ x =. x: x
 
 
 lcG64 =: 6148914537289504899x&((x: inv^:IF64 9223371812008258273)  | *)
+
+NB. intentionally slow lCG gen
+lcGPrime =: 1 : 0 NB. Gens a prime lcg based on seed and bits
+'s bits' =. m
+p=. 11 + 12 * s bitsRndR bits
+while. -.@MillerRabinQW p do. p =. 11 + 12 * rollbits bits end.
+NB. lcG4 =: 2 : ' ] |  n (][ [ assign ( {.@RawRnd31@1:) + ]) (n~ + 48271x)  ((1-~2x^m) |  *) 3 : n'
+roll =: (] | 'seed' (][ [ assign ( {.@RawRnd31@1:) + ]) (p|seed) (p|*) 3 : 'seed')"0
+)
+NB. slow to stop brute force guessing.
+Slowbytes =:  4 : 0 NB.x is numbytes # bytes (or range), y is passphrase in splitpw format
+'n p' =. splitpw y
+bits =. 129 + ^:> >: {: n
+(bits ,~ s512 bighash ; ": expandpw&>/ splitpw y) lcGPrime x
+)
+
+lcGPrime2 =: 1 : 0 NB. Gens a prime lcg based on seed and bits , but with y (constant) slowdown factor
+'s bits' =. m
+p=. 11 + 12 * s bitsRndR bits
+while. -.@MillerRabinQW p do. p =. 11 + 12 * rollbits bits end.
+NB. lcG4 =: 2 : ' ] |  n (][ [ assign ( {.@RawRnd31@1:) + ]) (n~ + 48271x)  ((1-~2x^m) |  *) 3 : n'
+roll =: (] | 'seed' (][ [ assign ( {.@RawRnd31@1:) + ]) ((y,~ bits-8) bitsLnRNGSlow  +/ (x:^:(-. IF64) 256 * RawRnd31 2) | p , seed) (p|*) 3 : 'seed')"0
+seed
+)
+NB. slow to stop brute force guessing.
+Slowbytes2 =:  1 : 0 NB.x is numbytes # bytes (or range), y is passphrase in splitpw format. m is slowdown factor
+:
+'n p' =. splitpw y
+bits =. 129 + ^:> >: {: n
+(bits ,~ s512 bighash ; ": expandpwF&>/ splitpw  y) lcGPrime2 1 >. m - bits
+roll x
+)
+
+TimeBytes =: 4 : 0 NB. x is range of start,len numbers to be appended to pw, y is pwd in splitpw format
+'l u' =. x
+c =. 10
+r =. c >.@%~ u
+(;/ 0 , l + c * i.r) ,. (;/ l + i.c) , (r,c) $ timex each  (<'1 (300 Slowbytes2) ') , each  <"1 ([: quote  y ,"1 ' ' , ":)"0 l + i. r*c
+)
+
+
+coclass 'rabin'
+coinsert 'RNG'
+coinsert 'factoring'
+coinsert 'hash'
+coinsert 'hashutil'
+
 genqpn4 =: 3 : 0
 'p q' =. x: 2{. <: 12 * (, ] +  +:@>.@%:)y
 assert. q > p
@@ -485,44 +491,6 @@ d =. 3 invmod~ */ <: p,q
 
 d&((p*q) | *) 
 )
-NB. intentionally slow lCG gen
-lcGPrime =: 1 : 0 NB. Gens a prime lcg based on seed and bits
-'s bits' =. m
-p=. 11 + 12 * s bitsRndR bits
-while. -.@MillerRabinQW p do. p =. 11 + 12 * rollbits bits end.
-NB. lcG4 =: 2 : ' ] |  n (][ [ assign ( {.@RawRnd31@1:) + ]) (n~ + 48271x)  ((1-~2x^m) |  *) 3 : n'
-roll =: (] | 'seed' (][ [ assign ( {.@RawRnd31@1:) + ]) (p|seed) (p|*) 3 : 'seed')"0
-)
-NB. slow to stop brute force guessing.
-Slowbytes =:  4 : 0 NB.x is numbytes # bytes (or range), y is passphrase in splitpw format
-'n p' =. splitpw y
-bits =. 129 + ^:> >: {: n
-(bits ,~ s512 bighash ; ": expandpw&>/ splitpw y) lcGPrime x
-)
-
-lcGPrime2 =: 1 : 0 NB. Gens a prime lcg based on seed and bits , but with y (constant) slowdown factor
-'s bits' =. m
-p=. 11 + 12 * s bitsRndR bits
-while. -.@MillerRabinQW p do. p =. 11 + 12 * rollbits bits end.
-NB. lcG4 =: 2 : ' ] |  n (][ [ assign ( {.@RawRnd31@1:) + ]) (n~ + 48271x)  ((1-~2x^m) |  *) 3 : n'
-roll =: (] | 'seed' (][ [ assign ( {.@RawRnd31@1:) + ]) ((y,~ bits-8) bitsLnRNGSlow  +/ (x:^:(-. IF64) 256 * RawRnd31 2) | p , seed) (p|*) 3 : 'seed')"0
-seed
-)
-NB. slow to stop brute force guessing.
-Slowbytes2 =:  1 : 0 NB.x is numbytes # bytes (or range), y is passphrase in splitpw format. m is slowdown factor
-:
-'n p' =. splitpw y
-bits =. 129 + ^:> >: {: n
-(bits ,~ s512 bighash ; ": expandpwF&>/ splitpw  y) lcGPrime2 1 >. m - bits
-roll x
-)
-
-TimeBytes =: 4 : 0 NB. x is range of start,len numbers to be appended to pw, y is pwd in splitpw format
-'l u' =. x
-c =. 10
-r =. c >.@%~ u
-(;/ 0 , l + c * i.r) ,. (;/ l + i.c) , (r,c) $ timex each  (<'1 (300 Slowbytes2) ') , each  <"1 ([: quote  y ,"1 ' ' , ":)"0 l + i. r*c
-)
 getdn =: 3 : 0 NB. Just get d and n
 NB.'p q' =. genqpn4`genq@.(1=#) y 
 'p q' =. genqpn4 y 
@@ -543,18 +511,7 @@ d =. 3 invmod3~ */ <: p,q NB. from file rsa.ijs.
 nn =. p*q
 d (nn | *)  2&+^:([: +./ 0 1 = nn&|)
 )
-gcd2x=: 3 : 0  NB. extended euclid returns gcd,yp,yq in Rabin crypto.
-'r0 r1'=.y
-'s0 s1'=.1 0
-'t0 t1'=.0 1
-while. r1 ~: 0 do.
-q=.  r0 <.@% r1
-'r0 r1'=. r1,r0-q*r1
-'s0 s1'=. s1,s0-q*s1
-'t0 t1'=. t1,t0-q*t1
-end.
-r0,s0,t0
-)
+
 
 NB. rabin crypto functions p q and derived yp yq needed for decrypt.  n is public p*q. m is message that must be smaller than n.
 RCcrypt =: 4 : 'y x modexp 2' NB. x is m, y is n
@@ -617,7 +574,7 @@ m x modexp 2
 RWdecrypt3 =: (] RWdecrypt2~ RWdparams@:[ )"1 0
 RWdecrypt =: 4 : 0
 'n p q f3 f2 f1' =. par =. RWdparams x
- s =. 2x^ 2 >.@^. n assert. *./ n> y+2*s
+ pD s =. 2x^ 2 >.@^. n assert. *./ n> pD y+2*s
 par RWdecrypt2"1 0 y+s
 
 )
@@ -678,25 +635,7 @@ case. 3 do. 2 %~ <: 2%~n-d
 end.
 )
 
-jacobi =: 4 : 0 NB. x is n , y is a. returns 1 0 _1 wiki jacobi symbol
-NB. pD x, y
-NB. if. 1 = *./ 0 < x,y do. 'x y' =. - x,y end.
-NB. if. +./ 0 1 _1 = y do. if. 0 > x do. -y else. y end. return. end.
-if. +./ 0 1  = y do. y return. end.
-NB.if. 0 = 2|y do. if. +./ 1 7= 8| x do. x jacobi -: y else. x jacobi - -: y end. return. end.
-if. 0 = 2|y do. if. +./ 1 7= 8| x do. x jacobi -: y else. x -@jacobi  -: y end. return. end.
-NB.if. 3 3 -: 4 | x, y do. y jacobi - y | x else. y jacobi  y | x end.
-if. 3 3 -: 4 | x, y do. y -@jacobi  y | x else. y jacobi  y | x end.
-)
-cf=: 4 : '{:"1 (,<.)@%@-/^:(<x) (,<.) y' NB. conttinued faction
-cfx=: 4 : 0
- z=. a=. <.r=. y
- for. i.x do. z=. z, a=. <. r=. % r - a 
- if. a = _ do. z return. end. end.
-)
-notmult =: %~ ~: <.@%~
-ismult =: %~ = <.@%~
-issquare =: %: = <.@%:
+
 NB. for compressing signatures take cfx s/n (extended) then expand with (+%)/\ (+%)/\ 30 cfx 45 % 253x
 NB. the denominator d in list where d (n | *) s < sqrt of n, is key to replace s. r =. 378877 (169567420181x (] <.-) 169567420181x | * ) 108506016599
 NB. verify with  r = sqrt (d^2) (n|*) m  (m is s^2)  ([: %: 169567420181x | [: */ 169567420181x | *: ) 378877 108506016599x
@@ -744,29 +683,3 @@ privkey =: 4 : 0
 )
 
 
-g0    =: , ,. =@i.@2:
-it    =: {: ,: {. - {: * <.@%&{./
-gcd   =: (}.@{.) @ (it^:(*@{.@{:)^:_) @ g0
-
-ab    =: |.@(gcd/ * [ % +./)@(,&{.)
-cr1   =: [: |/\ *.&{. , ,&{: +/ .* ab
-chkc  =: [: assert ,&{: -: ,&{. | {:@cr1
-cr    =: cr1 [ chkc
-
-CRT =: 1 : 0 NB. m is coprime p q 
-'n p q yp yq' =. RCdparams m
-'a b' =. (yp , yq) |.@:* p,q NB. is gcd2x (euclid) such that 
-NB. ([: |/\ *.&{. , ,&{: +/ .*  (yp , yq) |.@:* ,&{.)/@:((p,q) ,. ])
-( n | ,&{: +/ .*  (a,b)"_)/@:((p,q) ,. ])
-)
-
-CRTm =: 1 : 0 NB. multiparam list of coprime bases.  
-n =. */ m
-assert n = *./m 
-NB.abl =.  ab/\ m
-NB. pD ( (2&{.@:]) , [: |/ *&(2&{) , ,&{: +/ .*  (2&{.@:]))/\@:(abl ,. m ,. ]) y
-NB.,@:( (2&{.@:]) , [: |/\ *&(2&{) , ,&{: +/ .*  (2&{.@:]))/\@:(abl ,. m ,. ])
-NB.( (2&{.@:]) , [: |/\ *&(2&{) , ,&{: +/ .*  (2&{.@:]))/\@:(abl ,. m ,. ])
-[:{: cr1/@:(m ,. ])
-NB. n | [: {: 
-)

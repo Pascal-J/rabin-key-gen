@@ -91,7 +91,8 @@ pD p=. ~. ( noz 18!:2 coname''), noz p
 ( p , <,'z') 18!:2 coname''
 )
 
-v2c =: 1 : ' 2 : (''u '' , u lrA , '' v'')'
+v2c =: 1 : ' 2 : (''u '' ,''('', u lrA , '')'' , '' v'')'
+v2a =: 1 : ( 'a =. (u lrA ,'' m '') label_. 1 : (''m  1 :'' , quote a)')
 a2d =: 1 : 0 NB. turns adverb into dyad (so that rank or other modifiers can be applied to it).  adv must take noun arg.
 4 : ('x ', u ,' y')
 )
@@ -99,7 +100,18 @@ a2d =: 1 : '4 : (''x ('', u ,'') y'')'
 a2v =: 1 : 0 NB. for dyad adverb, where adverb takes noun arg.  ie (3 1,: 6 2) '}' a2v reduce i.5
 4 : ('''a b'' =. x label_. a (b(', u  , ')) y')
 )
-
+daS =: 2 : (' a =. (u lrA , '' u '' , n) label_. 1 : (''u  1 :'' , quote a)')
+NB. 1 : ('u  1 :' , quote a)
+daF =: 1 : ('a =. (''2 : '', (quote m) , '' u'') label_. 1 : (''u  1 :'' , quote a)')
+daFx =: (0 : ) 1 : ('a =. (''2 : ('', (lr m) , '') u'') label_. 1 : (''u  1 :'' , quote a)') NB. explicit. call with 0 left arg
+c2da =: 1 : ( 'a =. (m ,'' u'') label_. 1 : (''u  1 :'' , quote a)')
+NB. c2da =: 1 : ( 'a =. ''('' , m ,'' u)'' label_. 1 : (''u  1 :'' , quote a)')
+dlbind =: c2daS =: 1 : ( 'a =. ((": m) ,~''u '') label_. 1 : (''u  1 :'' , quote a)') 
+dbind =: 1 : ( 'a =. (( u lrA) ,~''u '') label_. 1 : (''u  1 :'' , quote a)') 
+da2c =: 2 : '(u  , '' '', v) eval'
+da2v =: 4 : '(x da2c y)'
+NB.dlbind =: 1 : ( 'a =. (( u lrA , '')'') ,~''u@:(3 : '') label_. 1 : (''u  1 :'' , quote a)') 
+NB. frags =: 1 : ( 'a =. ((": m) ,~''u lrA '') label_. 1 : (''u  1 :'' , quote a)')
 Fork =: 1 : ' 2 : (''u"_ '' , ''('', u lrA , '')'' , '' v"_'')'
 Fork =: 1 : ' 2 : (''u '' , ''('', u lrA , '')'' , '' v"_'')'
 Between =: 2 : ' 1 : (''[: ('' , u lrA , '') [: '', '' u ('' , (v lrA) ,'')"_'')'
@@ -157,6 +169,7 @@ if. L. y do.  ('(> ; 5!:5 )"0 ', x ,' nl 0') inl y else. (] , [: < [: ,. [: cutL
 )
 NB. simple version without verbs
 quoteortostring =:  ":`quote@. (2=3!:0)
+
 NB. kv struct that always returns answer. with default item 0
 NB. Boxed noun keys are searched first.  If result is unboxed string, it is assumed to be a function and doSafe'd to see answer.
 NB. result of functions must be indexes (or integers.  If fail to produce valid index, next function evald).  If value is boxed it is returned.  unboxed string is evald as before.
@@ -183,11 +196,15 @@ link=: ,&:boxopen"1
 Boxlink =: boxopen each@:,&<
 boxitems =: (<"0)`(<"1)@.(1<#@$)
 boxAsRows =: <"_1 L:1 ^:(1 >. <:@#@$)
+boxscan =: &.>/(>@:) NB. applies u/ to any shape x and any shape y, as long as they are joined <x,<y
 reduce =: 1 : (':'; 'u boxscan (<"_1 x), < y') 
 reduce =: 1 :'>@:(u&.>/)@(<"_1@[,<@])'
 reduce2=: boxscan(@:(<"_1@:[ , <@:]))
+reduce2=: (&.>)/(>@:)(@:(,~))(&(<"_1))
+reduce =: 1 : '([: u boxscan ,~)&(<"_1)'
+reducE =: 1 : (':';'o=. x for_i. y do. o =. o u i end.')
 
-boxscan =: &.>/(>@:) NB. applies u/ to any shape x and any shape y, as long as they are joined <x,<y
+
 assignwith =: 1 : ('y assign u (y~ [ ]) :: ((i.0)"1) 1';':';'y assign x u (y~ [ ]) :: ((i.0)"1) 1')
 NB. lassignwith=: 1 : ('y lassign f. u y~';':';'".''y lassign f. x u y~''') 
 assignwithC =: 2 : ('y assign u (y~ [ ]) :: (n"_) 1';':';'y assign x u (y~ [ ]) :: (n"_) 1 [pD n;($x);y')
@@ -233,6 +250,10 @@ hook_z_ =: 2 : '([: u v) : (u v) '
 rhook_z_ =: 2 : ' (u~ v)~ '
 
 ar =: 1 : '5!:1 <''u'''
+aar =: 1 : 'q =. m eval label_. 5!:1 < ''q'' '
+aar =: 1 : 'if. isNoun ''u'' do. q =. m eval else. q =. u end. 5!:1 < ''q'' '
+ismodstring =: 1 : 'if. 0 = 4!:0 <''u'' do. try. q =.  m eval catch. 0 return. end. 1 2 e.~ 4!:0 <''q''else. 0 end. '
+lrP =: 'if. 0~: 4!:0 <''v'' do. v =. v lrA end. if. u ismodstring do.  u=. m else. u =. ''('', u lrA , '')'' end.  u , '' '' , v ' daF
 makecompute_z_ =: 1 : ('u ar  Boxlink  y';':';'u ar  ,&<  x ,&< y')
 makecompute_z_ =: 1 : ('u ar  (;<) < y';':';'u ar  (;<)  x (;<) y')
 

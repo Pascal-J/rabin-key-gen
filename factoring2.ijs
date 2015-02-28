@@ -1,6 +1,94 @@
 testinvmod=: (0 1 e.~ [| ]* invmod)
 
 
+coclass 'factoring'
+
+intpower=: 3 : 0
+2x intpower y
+:
+a=. 1 [ xp=. x
+for_k. |. }. #: y do.
+  if. k do. a=. a*xp end.
+  xp=. *: xp
+end.
+a*xp
+)
+afd =: (a.{~ 256&#. inv) f. 
+dfa =: (256x #. a. i. ]) 
+modpow =: 4 : 'x y&|@^ 65537'
+modexp =: 1 : (':';'x m&|@^ y')
+
+imw=: ((2&{ - {. * 4&{ <.@% {:),(3&{ - 1&{ * 4&{ <.@% {:), 2&{., ({: | 4&{) ,~{:)^:(0 ~: {:)
+invmod=: 4 : 0
+NB. inverse of y mod x (x|y)
+NB. uc vc ud vd d c  where d c init as x y
+NB. q =. d<.@%c -- (4&{ <.@%~ {:)
+a=. imw^:_ ] 1x,0x,0x,1x,x,y
+if. 1~: 4{a do. 0 return. end. NB. returns 0 if no inverse
+if.0< 2{ a do. 2{ a else. x+2{a end.
+)
+
+gcd2x=: 3 : 0  NB. extended euclid returns gcd,yp,yq in Rabin crypto.
+'r0 r1'=.y
+'s0 s1'=.1 0
+'t0 t1'=.0 1
+while. r1 ~: 0 do.
+q=.  r0 <.@% r1
+'r0 r1'=. r1,r0-q*r1
+'s0 s1'=. s1,s0-q*s1
+'t0 t1'=. t1,t0-q*t1
+end.
+r0,s0,t0
+)
+
+jacobi =: 4 : 0 NB. x is n , y is a. returns 1 0 _1 wiki jacobi symbol
+NB. pD x, y
+NB. if. 1 = *./ 0 < x,y do. 'x y' =. - x,y end.
+NB. if. +./ 0 1 _1 = y do. if. 0 > x do. -y else. y end. return. end.
+if. +./ 0 1  = y do. y return. end.
+NB.if. 0 = 2|y do. if. +./ 1 7= 8| x do. x jacobi -: y else. x jacobi - -: y end. return. end.
+if. 0 = 2|y do. if. +./ 1 7= 8| x do. x jacobi -: y else. x -@jacobi  -: y end. return. end.
+NB.if. 3 3 -: 4 | x, y do. y jacobi - y | x else. y jacobi  y | x end.
+if. 3 3 -: 4 | x, y do. y -@jacobi  y | x else. y jacobi  y | x end.
+)
+cf=: 4 : '{:"1 (,<.)@%@-/^:(<x) (,<.) y' NB. conttinued faction
+cfx=: 4 : 0
+ z=. a=. <.r=. y
+ for. i.x do. z=. z, a=. <. r=. % r - a 
+ if. a = _ do. z return. end. end.
+)
+notmult =: %~ ~: <.@%~
+ismult =: %~ = <.@%~
+issquare =: %: = <.@%:
+
+
+g0    =: , ,. =@i.@2:
+it    =: {: ,: {. - {: * <.@%&{./
+gcd   =: (}.@{.) @ (it^:(*@{.@{:)^:_) @ g0
+
+ab    =: |.@(gcd/ * [ % +./)@(,&{.)
+cr1   =: [: |/\ *.&{. , ,&{: +/ .* ab
+chkc  =: [: assert ,&{: -: ,&{. | {:@cr1
+cr    =: cr1 [ chkc
+
+CRT =: 1 : 0 NB. m is coprime p q 
+'n p q yp yq' =. RCdparams m
+'a b' =. (yp , yq) |.@:* p,q NB. is gcd2x (euclid) such that 
+NB. ([: |/\ *.&{. , ,&{: +/ .*  (yp , yq) |.@:* ,&{.)/@:((p,q) ,. ])
+( n | ,&{: +/ .*  (a,b)"_)/@:((p,q) ,. ])
+)
+
+CRTm =: 1 : 0 NB. multiparam list of coprime bases.  
+n =. */ m
+assert n = *./m 
+NB.abl =.  ab/\ m
+NB. pD ( (2&{.@:]) , [: |/ *&(2&{) , ,&{: +/ .*  (2&{.@:]))/\@:(abl ,. m ,. ]) y
+NB.,@:( (2&{.@:]) , [: |/\ *&(2&{) , ,&{: +/ .*  (2&{.@:]))/\@:(abl ,. m ,. ])
+NB.( (2&{.@:]) , [: |/\ *&(2&{) , ,&{: +/ .*  (2&{.@:]))/\@:(abl ,. m ,. ])
+[:{: cr1/@:(m ,. ])
+NB. n | [: {: 
+)
+
 
 huo=: <. @ -:^:(0=2&|)^:a:  NB. halve until odd
 NB. magic numbers from http://primes.utm.edu/prove/prove2_3.html
@@ -122,6 +210,10 @@ nextprimeQ1 =: quicknextcandidate^:(-.@(MillerRabinQ1))^:_@:quicknextcandidate
 nextprimeF =: quicknextcandidate^:(-.@(Fermat))^:_@:quicknextcandidate
 nextprimeFQ =: quicknextcandidate^:(-.@(FermatQ))^:_@:quicknextcandidate
 
+
+coclass 'cipher2'
+coinsert 'hashutil'
+NB. requires zutil for amend.
 NB. from http://en.wikipedia.org/wiki/Spigot_algorithm where x is 2, and y is k'th bit of ln 2
 NB. can be used with any x.  slow with large y.  Produces wide fractional number (randomish)
  iofLn =: (([: +/ [: % ((1+i.11) ^~ [) * (1+i.11) + ]) + 1 | [: +/ >:@:i.@] %~ >:@:i.@] | [ ^ ] - >:@:i.@])~"0 0
