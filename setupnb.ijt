@@ -540,7 +540,7 @@ Lab Section Name
 
   The purpose of the NAME is only to help people who know you recognize you.
 )
-] NAME =: ;: inv ({. , [: {.each {:);: FULLNAME
+] NAME =: FULLNAME    NB.;: inv ({. , [: {.each {:);: FULLNAME
 
 ] LOCATION =: ';' cut LOCATIONS
 
@@ -673,9 +673,9 @@ PREPARE
 NB. 'APPDIR APPDATA' =: 3!:2 fread    (jpath '~install'),'/', 'nbpath.settings'
 1!:44 APPDIR
 favoritesF =: 3!:2 fread (APPDATA , 'keys/salt.settings')
-load 'factoring.ijs'
+load 'factoring2.ijs'
 load 'zutils.ijs'
-load 'openssl.ijs'
+load 'openssl2.ijs'
 PREPARE
  'APPDIR APPDATA' =: 3!:2 fread  (1!:43 ''),'/', 'nbpath.settings'
 
@@ -763,9 +763,9 @@ PREPARE
 'APPDIR APPDATA' =: 3!:2 fread    (1!:43 ''),'/', 'nbpath.settings'
 NB. 'APPDIR APPDATA' =: 3!:2 fread    (jpath '~install'),'/', 'nbpath.settings'
 1!:44 APPDIR
-load 'factoring.ijs'
+load 'factoring2.ijs'
 load 'zutils.ijs'
-load 'openssl.ijs'
+load 'openssl2.ijs'
 PREPARE
 
  60 20 TimeBytes 'abc 12'
@@ -895,9 +895,9 @@ PREPARE
 favoritesF =: 3!:2 fread (APPDATA , 'keys/salt.settings')
 
 1!:44 APPDIR
-load 'factoring.ijs'
+load 'factoring2.ijs'
 load 'zutils.ijs'
-load 'openssl.ijs'
+load 'openssl2.ijs'
 PREPARE
 
 KEYS =: 3!:2 fread APPDATA , 'keys/keys.settings'

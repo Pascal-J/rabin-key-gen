@@ -253,7 +253,15 @@ ar =: 1 : '5!:1 <''u'''
 aar =: 1 : 'q =. m eval label_. 5!:1 < ''q'' '
 aar =: 1 : 'if. isNoun ''u'' do. q =. m eval else. q =. u end. 5!:1 < ''q'' '
 ismodstring =: 1 : 'if. 0 = 4!:0 <''u'' do. try. q =.  m eval catch. 0 return. end. 1 2 e.~ 4!:0 <''q''else. 0 end. '
+ncS=:3 :'z=.y 1 :y label_. 4!:0 <''z'' ' :: _2: NB. nameclass of string
 lrP =: 'if. 0~: 4!:0 <''v'' do. v =. v lrA end. if. u ismodstring do.  u=. m else. u =. ''('', u lrA , '')'' end.  u , '' '' , v ' daF
+ncA =: 1 : 'if. 3 ~: 4!:0 < ''u'' do. if. m ismodstring do. m ; ncS m else. 0 ;~ ''('', m lrA ,'')'' end. else. 3;~ ''('', u lrA ,'')'' end.'
+NB.tieB =: 2 : 'if. 2 ~: #@$ n do. n =. ,: n end. pD n if. u ismodstring do.  u=. m else. u =. ''('', u lrA , '')'' end. n ,~ u; ncS  u'
+tieB =: 'if. 1 = #@$ n do. n =. ,: n end. n ,~ u ncA' daF
+NB.tieB =: 2 :'if. 1 = #@$ n do. n =. ,: n end. n ,~ u ncA' 
+lrB =: 2 : 0
+if. 0 = L. n do. ,: n;ncS n end.
+)
 makecompute_z_ =: 1 : ('u ar  Boxlink  y';':';'u ar  ,&<  x ,&< y')
 makecompute_z_ =: 1 : ('u ar  (;<) < y';':';'u ar  (;<)  x (;<) y')
 

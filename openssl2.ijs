@@ -342,7 +342,7 @@ roll =: (] | 'seed' (][ [ assign ( {.@RawRnd31@1:) + ]) (p|seed) (p|*) 3 : 'seed
 NB. slow to stop brute force guessing.
 Slowbytes =:  4 : 0 NB.x is numbytes # bytes (or range), y is passphrase in splitpw format
 'n p' =. splitpw y
-bits =. 129 + ^:> >: {: n
+bits =. 576 <. 129 + ^:> >: {: n
 (bits ,~ s512 bighash ; ": expandpw&>/ splitpw y) lcGPrime x
 )
 
@@ -358,8 +358,8 @@ NB. slow to stop brute force guessing.
 Slowbytes2 =:  1 : 0 NB.x is numbytes # bytes (or range), y is passphrase in splitpw format. m is slowdown factor
 :
 'n p' =. splitpw y
-bits =. 129 + ^:> >: {: n
-(bits ,~ s512 bighash ; ": expandpwF&>/ splitpw  y) lcGPrime2 1 >. m - bits
+bits =. 400 <. 129 + ^:> >: {: n
+(bits ,~ s512 bighash ; ": expandpwF&>/ splitpw  y) lcGPrime2 m <. | m - bits
 roll x
 )
 
