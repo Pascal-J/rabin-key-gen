@@ -5,7 +5,7 @@ rabin-key-gen
 
 J 8.03 or 8.04 (likely compatible with later versions).  Available from http://www.jsoftware.com/stable.htm.
 
-recommended copy the downloaded files here (inside zip file) to folder is home/natbit or (C:/User/Yourname/natbit).  unzip all files there.  (You may download from github on right sidebar)
+recommended copy the downloaded files here (inside zip file) to folder is home/natbit or (C:/User/Yourname/natbit).  unzip all files there.  (You may *Download zip* from github on right sidebar)
 
 to run, start J with the jqt command (a yellow background J programming console will open)
 
