@@ -29,7 +29,7 @@ SK =: 894
 PK =: 1214
 
 
-ispwdan =:  0 < 0 ". >@{:@:;:
+ispwdan =:  ([: *./ 0 < 0 ". >@{:@:;:)
 
 cb =: 3 : 0 
 if. a: -: y do. return. end.
@@ -64,4 +64,6 @@ go =: 3 : 0
 start_consoleform_ co =: 'cb__Ckeygenform__OOP;output from key generation will display here' DEF_consoleform_ r =: 'pass ; Personalized Deterministic rabin key generator with provable authorship; Fill in all fields. ;cb__Ckeygenform__OOP; ` ` `english` ` ` ` ` `190 198 ; edit`edit`edit`edit`edit`passw"1`passw"1`passw"1`passw"1`ignore"1 ; Your name. Use initial for first or last name.  Punctuation optional.`location(s) you consider home.  City, region, country.  Separate multiple ones with semicolon`YYYYMMDD with no punctuation`languages you can speak write or read.  Separate with semicolons.`A permanent email`Salt. 24+ characters list of word(s) then list of numbers.  list items are separated by spaces`8+ character password.  Ends in list of numbers separated from rest with a space.`8+ character password (can repeat password2)`8+ character password (can repeat password2)`list of 2 numbers to override (if ignore is off) bit sizes (ignore/override only for quick tests)' DEFfromR_recordform_ PARAMS
 NB. start_consoleform_ co =: '`;hello world' DEF_consoleform_ r =: ('pass ; password for life;cb__; ; passw`edit ; enter long password you will remember ` numbers are good') DEF_recordform_ 'password str `7&mthan; other int`3 5&inrange 0&gthan 22&lthan'
 )
+
+
 go a:
