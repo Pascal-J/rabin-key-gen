@@ -13,8 +13,6 @@ for_k. |. }. #: y do.
 end.
 a*xp
 )
-afd =: (a.{~ 256&#. inv) f. 
-dfa =: (256x #. a. i. ]) 
 modpow =: 4 : 'x y&|@^ 65537'
 modexp =: 1 : (':';'x m&|@^ y')
 
@@ -57,10 +55,37 @@ cfx=: 4 : 0
  for. i.x do. z=. z, a=. <. r=. % r - a 
  if. a = _ do. z return. end. end.
 )
+ NB. x is highest denominator to round to. y is rational fraction
+NB. returns just denominator.  Used for compression of rabin signatures.
+cfround2 =:  4 : 0 
+ 'v0 v1 v2'=. 2 {:"1@:x: (+%)/\ 2 cfx y
+ 
+     a=.<. r=. % r - <.r=. y
+    NB. a=.<. r=. % r - <. r=. % r - <.r=. y
+  while. x > v2  do. 
+   if. _ = a=. <. r=. % r - a do. v2 return. end.
+   v2 =. v0 + v1 * a
+   v0 =. v1
+   v1 =. v2  
+  end. 
+v0
+)
+
+
+
+NB. error if no denominator lower than x
+cfround =: (<.@%:@[ 4 : 0 %~) :: 0: NB. x is highest denominator to round to. y is rational fraction
+ z=. a=. <.r=. y
+ whilst. x > {: s =. (] , {:@(2&x:)) (+%)/ z do. s1 =. s
+ z=. z, a=. <. r=. % r - a 
+ if. a = _ do. s return. end. end.
+ s1
+)
+
 notmult =: %~ ~: <.@%~
 ismult =: %~ = <.@%~
 issquare =: %: = <.@%:
-
+issquare =: ] = [: *: <.@%:
 
 g0    =: , ,. =@i.@2:
 it    =: {: ,: {. - {: * <.@%&{./
@@ -213,7 +238,15 @@ nextprimeFQ =: quicknextcandidate^:(-.@(FermatQ))^:_@:quicknextcandidate
 
 coclass 'cipher2'
 coinsert 'hashutil'
-NB. requires zutil for amend.
+coinsert 'OOP'
+NB. requires zutil or OOP/typesys for amdt.
+amend =: 2 : 0  NB. v is n or n{"num
+s=. v"_ y
+(u (s{y)) (s}) y 
+:
+s=. x v"_ y
+(x u (s{y)) (s}) y 
+)
 NB. from http://en.wikipedia.org/wiki/Spigot_algorithm where x is 2, and y is k'th bit of ln 2
 NB. can be used with any x.  slow with large y.  Produces wide fractional number (randomish)
  iofLn =: (([: +/ [: % ((1+i.11) ^~ [) * (1+i.11) + ]) + 1 | [: +/ >:@:i.@] %~ >:@:i.@] | [ ^ ] - >:@:i.@])~"0 0
@@ -229,15 +262,17 @@ enc2 =:  ~.@:[ /:~ ] </.~ #@:] $ [
 enc =: ;@:enc2
 split =: ] </.~ ~.@:[ #~ ~.@:[ /:~ [: #/.~ #@:] $ [
 pop=: 4 : 'o=. i.0  for_i. x do. y=. }. each amend i y [ o=. o,{. i {:: y  end. y (,<) o'
+NB. pop=: 4 : 'o=. i.0  for_i. x do. y=. }.@:] each amdt i y [ o=. o,{. i {:: y  end. y (,<) o'
 dec =:  >@{:@:(($~ #) pop  split)
 
 genkey =: (0,~>: i.13) (] , [ #~ -.@e.) 14 #.inv */@:x:  NB. generates anagram key at least 13 base-14 digits long 8e14+ possibilities.
-encB =: [: tb64 genkey@:[  enc  ] NB. functions to simplify use with numeric keys.
-decB =: genkey@:[ dec fb64@:]
+encB =: [: tb64 genkey@:[ ([ enc (' ' #~ #@[) {:@:,: ]) ] NB. functions to simplify use with numeric keys.
+decB =: dltb@:(genkey@:[ dec fb64@:])
 encB3 =: encB^:3 
 decB3 =: decB^:3
-encX =: ([: tb64 (genkey@:[  enc  ]) (22 b.)&.(a.&i.)  a. {~ (127 , #@:]) bitsRndR2~ 14 #. genkey@:[)
-decX =: (genkey@:[ dec fb64@:] (22 b.)&.(a.&i.)  a. {~ (127 , #@:fb64@:]) bitsRndR2~ 14 #. genkey@:[)
+NB.encX =: ([: tb64 (genkey@:[  enc  ]) (22 b.)&.(a.&i.)  a. {~ (127 , #@:]) bitsRndR2_RNG_~ 14 #. genkey@:[)
+encX =: ([: tb64 (genkey@:[  ([ enc (' ' #~ #@[) {:@:,: ])  ]) (22 b.)&.(a.&i.)  a. {~  genkey@:[ ((127 , >./&#) bitsRndR2_RNG_~ 14 #. [) ])
+decX =: dltb@:(genkey@:[ dec fb64@:] (22 b.)&.(a.&i.)  a. {~ (127 , #@:fb64@:]) bitsRndR2_RNG_~ 14 #. genkey@:[)
  
 NB. words numbers password format. returns product after conversion.
 splitpwToN =: 1&$: : (*  [: */@:(x:@:(0&{::) , [: ; [: (256x #.  a.&i.) each [: ;: 1&{::) splitpw)
@@ -255,7 +290,7 @@ NB. 'should be a total of at least 5 words+numbers' assert 4 < # n
 o =. (14x #. nn) encB3 100  $^:(> #) a=. x , ' ', n14 encB (# n14) $^:(> #)  x 
 pD 'plaintext: ',  a
 NB. pD (14x #. nn) decB3 o
-'Decryption check failed: ' assert (100  $^:(> #) a ) -:  (14x #. nn) decB3 o
+'Decryption check failed: ' assert (dltb 100  $^:(> #) a ) -:   (14x #. nn) decB3 o
 o
 
 )

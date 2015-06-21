@@ -184,11 +184,14 @@ PREPARE
 NB. 'APPDIR APPDATA' =: 3!:2 fread    (jpath '~install'),'/', 'nbpath.settings'
 1!:44 APPDIR
 load 'factoring2.ijs'
-load 'zutils.ijs'
-favorites =: 1 2 3
+NB.load 'zutils.ijs'
+load 'typesys.ijs'
+load 'records.ijs'
+favorites_passwords_ =: 1 2 3
 load 'openssl2.ijs'
 coinsert 'rabin'
 coinsert 'cipher2'
+coinsert 'OOP'
 PREPARE
 
 NB. Eventual favorites/salt hash will look like this
@@ -236,16 +239,16 @@ Lab Section Year of birth
   Enter your year of birth with leading 2 digits
 )
 
-DOB =:  wd 'mb input text "enter year of birth" "Year of birth (4 digits): " '
+DOB =:  wd 'mb input int "enter date of birth" "YearMMDD (all digits): " 0 18900101 23001231 0'
 
  
    encB =: [: tobase64 genkey@:[  enc  ] NB. functions to simplify use with numeric keys.
    decB =: genkey@:[ dec frombase64@:]
 
-   9112001 encB  FULLNAME , ' ' , DOB , ' Locations(cities/regions) ' NB. creates a base64 encoding (not encryption) of the scrambled cue phrase using genkey 9112001
+   9112001 encB  FULLNAME , ' ' , (": DOB) , ' Locations(cities/regions) ' NB. creates a base64 encoding (not encryption) of the scrambled cue phrase using genkey 9112001
 
  NB. base64 provides easier copying without worrying about trailing spaces, and ensures all characters are valid email content.
-   frombase64  9112002 encB FULLNAME , ' ' , DOB , ' Locations(cities/regions)'
+   frombase64  9112002 encB FULLNAME , ' ' , (": DOB) , ' Locations(cities/regions)'
 
 
 
@@ -260,17 +263,17 @@ Lab Section Locations
 
 LOCATIONS =:  wd 'mb input text "enter your locations (city, region, country)" "Locations ( use ; to separate multiple locations): " '
 
-   9112001 encB(^:4) FULLNAME , ' ' , DOB  , ' ' , LOCATIONS  NB. ^:4 applies 4 consecutive encodes.  Makes anagram only decodable with correct key and expands output each iteration for variable anagraming.
+   9112001 encB(^:4) FULLNAME , ' ' , (": DOB)  , ' ' , LOCATIONS  NB. ^:4 applies 4 consecutive encodes.  Makes anagram only decodable with correct key and expands output each iteration for variable anagraming.
 
-   fb64  9112003 encB(^:3) FULLNAME , ' ' , DOB  , ' ' , LOCATIONS   NB. one use of frombase64 sees another base64 layer, but
+   fb64  9112003 encB(^:3) FULLNAME , ' ' , (": DOB)  , ' ' , LOCATIONS   NB. one use of frombase64 sees another base64 layer, but
 
-   fb64(^:2) ] 9112001 encB^:3 FULLNAME , ' ' , DOB  , ' ' , LOCATIONS   NB. but 2 (or more) uses sees "garbage"
+   fb64(^:2) ] 9112001 encB^:3 FULLNAME , ' ' , (": DOB)  , ' ' , LOCATIONS   NB. but 2 (or more) uses sees "garbage"
 
-   9112001  decB^:3 (9112001 encB^:3 FULLNAME , ' ' , DOB  , ' ' , LOCATIONS ) NB. to decrypt, the same key needs to be provided, and same repeat (^:) left parameter
+   9112001  decB^:3 (9112001 encB^:3 FULLNAME , ' ' , (": DOB)  , ' ' , LOCATIONS ) NB. to decrypt, the same key needs to be provided, and same repeat (^:) left parameter
 
-   9112001  decB^:3 (9112001 encB^:4 FULLNAME , ' ' , DOB  , ' ' , LOCATIONS ) NB.  But if you provide too small of a repeat parameter (3 instead of 4) with the right key, you will still see base64 code (letters and numbers).  So you don't need to memorize the repeat parameter.  If you have the right key, just increase it until it deciphers.
+   9112001  decB^:3 (9112001 encB^:4 FULLNAME , ' ' , (": DOB)  , ' ' , LOCATIONS ) NB.  But if you provide too small of a repeat parameter (3 instead of 4) with the right key, you will still see base64 code (letters and numbers).  So you don't need to memorize the repeat parameter.  If you have the right key, just increase it until it deciphers.
 
-   9 11 2001  decB^:2 (9112001 encB^:3 FULLNAME , ' ' , DOB  , ' ' , LOCATIONS ) NB. the wrong decryption key though produces garbage, whether or not the repeat parameter matches what was used on encryption.
+   9 11 2001  decB^:2 (9112001 encB^:3 FULLNAME , ' ' , (": DOB)  , ' ' , LOCATIONS ) NB. the wrong decryption key though produces garbage, whether or not the repeat parameter matches what was used on encryption.
 
    encB3 =: encB^:3 NB. because of last property there is no need to use higher than 3 repeat value, and so we can fix a name to these functions.
    decB3 =: decB^:3
@@ -358,7 +361,7 @@ Lab Section
 )
 
 
-favorites =:   256 | _3 +/\  fb64 listhash (FULLNAME , ' ' , DOB  , ' ' , LOCATIONS ) (] encX FRCparse) FavoritesN =: splitpwToN wd 'mb input text "PASSWORD #1 (salt)" "Place answers for cue sheet.  Words followed by numbers" '
+favorites =:   256 | _3 +/\  fb64 listhash (FULLNAME , ' ', DOB , ' ' ,  LOCATIONS ) (] encX FRCparse) FavoritesN =: splitpwToN (wd 'mb input text "PASSWORD #1 (salt)" "Place answers for cue sheet.  Words followed by numbers" ') , ' ' , ": DOB
 
   2 ^.  FavoritesN
 
@@ -425,7 +428,7 @@ favoritesF_passwords_ =: favoritesF
 load 'openssl2.ijs'
 PREPARE
 
-  syskey =: 894 gencompressedN 256x #. fb64^:2 listhash (FULLNAME , ' ' , DOB  , ' ' , LOCATIONS ) FRCparse Nproof FavoritesN splitpwToN wd 'mb input text "enter password" "password: " '
+  syskey =: 894 gencompressedN 256x #. fb64^:2 listhash (FULLNAME , ' ' , (": DOB)  , ' ' , LOCATIONS ) FRCparse Nproof FavoritesN splitpwToN wd 'mb input text "enter password" "password: " '
 
 NB. =========================================================
 Lab Section 
@@ -453,7 +456,7 @@ Your personal key is 1214 bits long compared to the 894 bits of the system key.
 THIS WILL TAKE A BIT LONGER THAN Previous key generation.  PASSWORD #2 or PASSWORD#2b if #2 is short.
 )
 
-perskey =: 1214 gencompressedN 256x #. fb64^:2 listhash (FULLNAME , ' ' , DOB  , ' ' , LOCATIONS ) FRCparse Nproof FavoritesN splitpwToN wd 'mb input text "enter password" "password: " '
+perskey =: 1214 gencompressedN 256x #. fb64^:2 listhash (FULLNAME , ' ' , (": DOB)  , ' ' , LOCATIONS ) FRCparse Nproof FavoritesN splitpwToN wd 'mb input text "enter password" "password: " '
 
 NB. =========================================================
 Lab Section
@@ -575,9 +578,9 @@ Lab Section LANGUAGES
   A pause in loading this section is due to loading (and possibly downloading) the common zlib compression library.  If you see an error use Tools | Package Manager and install/update all arc/... packages.
 )
 PREPARE
-require '~addons/arc/zlib/zlib.ijs'
-install_jzlib_^:NOZLIB_jzlib_ ''
-load '~addons/arc/zlib/zlib.ijs'
+NB.require '~addons/arc/zlib/zlib.ijs'
+NB.install_jzlib_^:NOZLIB_jzlib_ ''
+NB.load '~addons/arc/zlib/zlib.ijs'
 PREPARE
 
  LANGUAGES =: ;: 'EN'
@@ -589,7 +592,7 @@ NB. =========================================================
 Lab Section
   Public key components have been placed on clipboard.  If you are joing society, then pasting this data in email now is approapirate.
 )
-wd 'clipcopy *', tobase64 zlib_compress 3!:1 EMAIL ; PUBKEYS , NAME;(<LOCATIONS), < LANGUAGES
+wd 'clipcopy *', tobase64 3!:1 EMAIL ; PUBKEYS , NAME;(< LOCATIONS), < LANGUAGES
 ,. 3!:2 zlib_uncompress frombase64 wdclippaste '' NB. this is what was copied to send.
 
 NB. =========================================================
@@ -674,8 +677,11 @@ NB. 'APPDIR APPDATA' =: 3!:2 fread    (jpath '~install'),'/', 'nbpath.settings'
 1!:44 APPDIR
 favoritesF =: 3!:2 fread (APPDATA , 'keys/salt.settings')
 load 'factoring2.ijs'
-load 'zutils.ijs'
+NB.load 'zutils.ijs'
 load 'openssl2.ijs'
+coinsert 'rabin'
+coinsert 'cipher2'
+coinsert 'OOP'
 PREPARE
  'APPDIR APPDATA' =: 3!:2 fread  (1!:43 ''),'/', 'nbpath.settings'
 

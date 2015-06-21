@@ -17,12 +17,16 @@ RSApE =: 3 ] 65537
 sslsha256 =: ' SHA256 i *c l *c' ssl
 sslsha512 =: ' SHA512 i *c l *c' ssl
 sslsha1 =: ' SHA1 i *c l *c' ssl
+sslsha12 =: ' SHA1 > + i *c i *c' ssl
 sslRIPEMD160 =: ' RIPEMD160 i *c l *c' ssl
-sslRMD160 =: (IFWIN {:: ' RIPEMD160 > + x *c x *c';'RIPEMD160 > x *c x *c')  ssl
-sslSha256 =: (IFWIN {:: ' SHA256 > + x *c x *c';'SHA256 > x *c x *c')  ssl  NB. SHA256 i *c l *c' ssl
-sslSha512 =: (IFWIN {:: ' SHA512 > + x *c x *c';'SHA512 > x *c x *c')  ssl
-sslSha1 =: (IFWIN {:: ' SHA1 > + x *c x *c';'SHA1 > x *c x *c')  ssl
-sslMD5 =: (IFWIN {:: ' MD5 > + x *c x *c';'MD5 > x *c x *c')  ssl
+NB. sslRMD160 =: (IFWIN {:: ' RIPEMD160 > + x *c x *c';'RIPEMD160 > x *c x *c')  ssl
+NB. sslSha256 =: (IFWIN {:: ' SHA256 > + x *c x *c';'SHA256 > x *c x *c')  ssl  NB. SHA256 i *c l *c' ssl
+NB. sslSha512 =: (IFWIN {:: ' SHA512 > + x *c x *c';'SHA512 > x *c x *c')  ssl
+sslRMD160 =: (IFWIN {:: ' RIPEMD160 > + x *c x *c';'RIPEMD160 > + i *c i *c')  ssl
+sslSha256 =: (IFWIN {:: ' SHA256 > + x *c x *c';'SHA256 > + i *c i *c')  ssl  NB. SHA256 i *c l *c' ssl
+sslSha512 =: (IFWIN {:: ' SHA512 > + x *c x *c';'SHA512 > + i *c i *c')  ssl
+sslSha1 =: (IFWIN {:: ' SHA1 > + x *c x *c';'SHA1 > + i *c i *c')  ssl
+sslMD5 =: (IFWIN {:: ' MD5 > + x *c x *c';'MD5 > + i *c i *c')  ssl
 
 
 
@@ -47,7 +51,7 @@ sslSha1 (y);(#y);md=. 20#' '
 md
 )
 sha12=: 3 : 0
-sslSha1 (y);(# , y);md=. 20#' '
+sslsha12 (y);(# , y);md=. 20#' '
 md
 )
 
@@ -95,7 +99,9 @@ hmac =: 1 : 0  NB. constant blocksize 64. u is hashfunction that produces binary
 )
 
 coclass 'hashutil'
-
+coinsert 'hash'
+afd =: (a.{~ 256&#. inv) f. 
+dfa =: (256x #. a. i. ]) 
 tobyte64 =:  (8 # 256) #: ]
 tobyte32 =: (4 # 256) #: ]
 int32hash =: (_4 tobyte32 inv\ a.i.])@:
@@ -110,7 +116,7 @@ int32hash =: listhash ((_4 (256x&#.)\ ])@:)
 dfh =: 16x #. 16 | '0123456789ABCDEF0123456789abcdef' i. ]
 dfhx =: 16x #. 16 | '0123456789ABCDEF0123456789abcdef' i. ]
 
-3 : 0 ''  NB. needs better fix for 32bit
+0 : 0 NB.''  NB. needs better fix for 32bit
 if. IFWIN *. -. IF64 do.
  s256 =: [: {&a. 256x #. inv [: dfh 'sha256'&gethash
  s512 =: [: {&a. 256x #. inv [: dfh 'sha512'&gethash
@@ -142,7 +148,13 @@ pad }. a. {~ #. _8 [\ , (6#2) #: BASE64 i. y
 
 fb64 =: (_2 >. ( i.&'=') - #) }. a. {~ [: #. _8 [\ [: , (6#2) #: BASE64&i.
 
-
+NB. no dependency on any system random
+lcGFree =: 2 : 0 NB. upto 512 bit RNG m is string seed m. n is bytes (max 64)
+s =. n {. s512 m
+seed =: (>.@-: n) {. bighash s
+p =: >: +: (2r3 <.@*  n) {. bighash s
+roll =: (] | 'seed' (][ assign) ((128!:3 m,s) , p ) ((<: +: ] bighash s) | [: +/ *) 3 : 'seed')"0
+)
 
 
 
@@ -272,6 +284,7 @@ itemsbetween =: 2 : '((m >:@i.~ y) , n <:@i.~ y) (takerange { ]) y'
 coclass 'RNG'
 coinsert 'passwords'
 coinsert 'factoring'
+NB.coinsert 'OOP'
 NB. secure RNG depends on whether numbers are published or discoverable.  Returned number range should be 30 bits less than period for basic security, but there are ways of guessing seed range.
 NB. adding to gbflip allows a period increase of 2^55.
 lcG =: 2 : '( ] | n assign (1-~2x^m) | 48271x * 3 : n)"0'  NB. generates a random generator verb using a var ('seed') as n.  m should be a mersenne prime exp, 31 61 89 107 127 521 607
@@ -298,7 +311,7 @@ bitsRnd =: 3 : 0"0
 m =. 2x^ 31 (| , <.@%~ # [) y
 (2147483648x #. (2x^{.) #: (amend 0) RawRnd31@:#)  m
 )
-bitsRnd =: (2147483648x #.  (2x^{.) #: (amend 0) RawRnd31@:#)@:(31&(| , <.@%~ # [))"0
+bitsRnd =: (2147483648x #.  (2x^{.) #: (amdt 0) RawRnd31@:#)@:(31&(| , <.@%~ # [))"0
 bitsRndS =: ([: 9!:1  (2x^31) | [ [ [: (9!:43) 1:) bitsRnd@] ]
 bitsRndC =: 4 : 0 NB. x is seed y is bits
 xp =. 2x >.@%~ {.y
@@ -354,6 +367,7 @@ NB. lcG4 =: 2 : ' ] |  n (][ [ assign ( {.@RawRnd31@1:) + ]) (n~ + 48271x)  ((1-
 roll =: (] | 'seed' (][ [ assign ( {.@RawRnd31@1:) + ]) ((y,~ bits-8) bitsLnRNGSlow  +/ (x:^:(-. IF64) 256 * RawRnd31 2) | p , seed) (p|*) 3 : 'seed')"0
 seed
 )
+
 NB. slow to stop brute force guessing.
 Slowbytes2 =:  1 : 0 NB.x is numbytes # bytes (or range), y is passphrase in splitpw format. m is slowdown factor
 :
@@ -469,14 +483,14 @@ p,q,  8 <.@%~ 5 -~ b-aa
 )
 
 decodeN =: 4 : 0
-'nb pad' =. 2 {. x , 19x
+'nb pad' =. 2 {. x , 17x
 aa=.#.  a=. x: (0 #~ nb - a),~ 1 #~ a=. (nb <.@% 2) - pad
 5+ aa+ 8*y
 )
-encodeN =: 4 : 0 NB. just used for tests
-'nb pad' =. 2 {. x , 19x
+encodeN =: 4 : 0 NB. just used for tests: max n
+'nb pad' =. 2 {. x , 17x
 n =. 2x^ nb
-aa=.#.  a=. x: (0 #~ nb - a),~ 1 #~ a=. (nb <.@% 2) - pad
+aa=.#.  a=.  (0x #~ nb - a),~ 1 #~ a=. (nb <.@% 2) - pad
 b =. n-3
 assert. 0 = 8 | 5 -~ b-aa
 pD 256 #. inv o =. 8 <.@%~ 5 -~ b-aa
@@ -535,7 +549,9 @@ UnRPad =: 10 #. [ ((#@:] - [) {. ]) 10 #. inv ]
 Pad2 =: ] * 2x ^ [
 UnPad2 =: (2x ^ [) ([ %~ ] #~ 0 = |) ]
 Pad =: [ Pad2 3 RPad ]
+Pad =: 2 + Pad2  NB. prevents squares and pq common factors if pad is either greather than pq, or source < pq.  Assures signature non trivial.
 UnPad =: 3 (UnRPad linearize) UnPad2 
+UnPad =:  [ UnPad2 -&2@:]
 RWdparams =: 3 : 0 NB. */ ,] , ({. | {: ^2-~{.), ] | 2 ^ 8 %~ 11 5 -~ 9 3 * ] NB. y is pq. returns williams precomputes
 'p q' =. y
  'a b'=. 8 %~ 11 5 -~ 9 3 * y
@@ -561,6 +577,14 @@ NB.assert. 0 =y -
 NB. pD n efsquare e,f,s
 e,f, s <. n-s
 )
+RWSignCompress =: ({.@:[  RWCompress  RWdecrypt2"1 0)
+NB. can compress without private key. x is n. y is unpacked RW sig.
+RWCompress =: (}:@:] , (<.@%:@[ * 1 { ]) cfround2  [ %~ {:@:])
+SignCompress =: ((4*{:) +(4 2 $ _1 1 _1 2 1 1 1 2) i. 2&{.)@:RWSignCompress
+NB. y is plaintext (numberhash), unpacked RWSignCOmpress
+RWVerifyCompress =:  ({.@:] = (2 *:@{ ]) %~ [ efsquare (1 2 { ]) , [ | %:@efsquare * (invmod {:))
+RWVerifyCompressQ =:  ([: issquare efsquare)
+VerifyCompress =: RWVerifyCompress ({. , ((4 <.@%~ ]) ,~ (4 2 $ _1 1 _1 2 1 1 1 2x) {~ 4&|)@:{:)"1
 efsquare =: (| */ * {:)"0 1 NB.x is mod n, y is e f s Williams "tweaked square roots"
 RWencrypt =:  4 : 0"0 NB. adds sqrtn(n is x) then takes negative(n-) if >n/2, and adds sqrtn again.  
 s =. >.@%: x
@@ -578,7 +602,8 @@ RWdecrypt =: 4 : 0
 par RWdecrypt2"1 0 y+s
 
 )
-Sign =: ((4*{:) +(4 2 $ _1 1 _1 2 1 1 1 2) i. 2&{.)@:RWdecrypt2"1 0
+RWPack =: (4*{:) + (4 2 $ _1 1 _1 2 1 1 1 2) i. 2&{.
+Sign =: RWPack@:RWdecrypt2"1 0
 Sign2 =: ((4*{:) +(4 2 $ _1 1 _1 2 1 1 1 2) i. 2&{.)"1@:([ RWdecrypt2 ] + 2x ^ 2 >.@^. {.@:[ )"1 0 NB. pad at source instead.
 Verify2 =: RWverify NB. pad at source instead.
 Verify =: RWverify2
@@ -597,7 +622,8 @@ RWverify =: >.@%:@[ -~ [efsquare ((4 <.@%~ ]) ,~ (4 2 $ _1 1 _1 2 1 1 1 2) {~ 4&
 RWverify =: 1 : 0
 (2x ^ 2 >.@^. m) -~  m efsquare ((4 <.@%~ ]) ,~ (4 2 $ _1 1 _1 2 1 1 1 2) {~ 4&|)"0 
 )
-RWverify2 =: efsquare ((4 <.@%~ ]) ,~ (4 2 $ _1 1 _1 2 1 1 1 2x) {~ 4&|)"0 NB. rawsig without + sqrt n
+RWUnpack =: ((4 <.@%~ ]) ,~ (4 2 $ _1 1 _1 2 1 1 1 2x) {~ 4&|)"0
+RWverify2 =: efsquare RWUnpack NB. rawsig without + sqrt n
 NB. RWverify2 =: 1 : '(m efsquare ((4 <.@%~ ]) ,~ (4 2 $ _1 1 _1 2 1 1 1 2) {~ 4&|)"0)' 
 
 
@@ -646,7 +672,7 @@ sq =. <.@%: n
 pad =. 0 NB.pad =. 4 ?. 4  NB. must find square. 8 bit pad allows 1e_32 prob of non failure.
 NB. while. 1< {. gcd2x n, y+{. pad do. pad =. }. pad end.  NB. must find square
 pD r =. ([: ( #~  (sq&>: *. 1&<))"1 [: {:("1)  2 x: [: (+%)/\("1)  20 cfx("0)  n %~ ]) a=. par RCdecrypt2 y + {. pad
-for_i. |:r do. pD 'o' ; o=. ([: I. 0&< *. sq&>:) pD b=. i (n (] <.-) n | * ) pD a
+for_i. |:r do. pD 'o' ; o=. ([: I. 0&< *. sq&>:) pD b=. i (n (] <.-) n | * )  a
 if.0<#o do. ({. pad) , y ,  {. pD /:~ (o{i),. o{a [ o =. {. o return. end. end.
 )
 
@@ -657,7 +683,7 @@ sq =. <.@%: n
 pad =. 3 ? 3 NB.pad =. 4 ?. 4  NB. must find square. 8 bit pad allows 1e_32 prob of non failure.
 while. +./ (p, q) ismult y + {. pad do. pad =. }. pad end.
 NB. while. 1< {. gcd2x n, y+{. pad do. pad =. }. pad end.  NB. must find square
- r =. ([: ( #~  (sq&>: *. 1&<))"1 [: {:("1)  2 x: [: (+%)/\("1)  20 cfx("0)  n %~ ]) a=. par RCdecrypt2 msg=.n | *: y + {. pad
+pD r =. ([: ( #~  (sq&>: *. 1&<))"1 [: {:("1)  2 x: [: (+%)/\("1)  140 cfx("0)  n %~ ]) pD a=. par RCdecrypt2 msg=.n | *: y + {. pad
 for_i. |:r do.'o' ; o=. ([: I. 0&< *. sq&>:)  b=. i (n (] <.-) n | * ) a
 if.0<#o do.  y  , ({. pad) + 3* {.  /:~ (o{i),. o{a [ o =. {. o return. end. end.
 )
@@ -671,11 +697,15 @@ RCVerify2 =: 4 : 0"1
 )
 RCVerify =: 4 : 0"1
 'm s' =. y
-pad =. 3 |s
+pad =. 3 | s
 s=. s <.@% 3
 msg =. (x|*:) m + pad
 pD s, pad, m,  o =. msg (  x |  [ * *:@] ) s NB. if result has integer square root, valid (probably?)
-issquare o
+if. issquare o do. 
+ pD os =. x ([ |  (%: o) * invmod) s
+ msg = x (| *:)os return.
+end.
+0
 )
 RCknownpad100 =: ] 
 privkey =: 4 : 0
@@ -683,3 +713,17 @@ privkey =: 4 : 0
 )
 
 
+coclass 'keepass'
+coinsert 'RNG'
+coinsert 'hashutil'
+NB. needs favorites_passwords_ set optional masterpwd
+'' ORdef 'masterpwd '
+keepass =: [: wd 'clipcopy *' ,  0&".@:>@{:@:;: {. [: tb64 a.{~ (64 # 256) Slowbytes masterpwd , ]
+loadmaster =: 3 : 0
+masterpwd =: y 
+if. 0 > 4!:0 < 'favorites_passwords_' do.
+  favorites_passwords_ =: 1 2 3 44 88 77 123 211
+ end.
+load > (4!:3 '') {~ 4!:4 < 'keepass_keepass_' 
+''
+)
