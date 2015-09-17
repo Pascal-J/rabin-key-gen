@@ -7,7 +7,7 @@ sslp =: IFWIN pick '';'D:\OpenSSL-Win64\bin\'
 sslp =: IFWIN pick ''; '/',~ jpath '~bin'  NB. with J802.  cut this line if you wish to point to downloaded folder
 NB. OPENSSL =: jpath '~system/ssleay32.dll '
 NB.OPENSSL =: sslp , '\ssleay32.dll '
-OPENSSL =: sslp , (IFIOS + (;: 'Win Linux Android Darwin') i. <UNAME_z_) pick 'libeay32.dll '; (2 $ <'libssl.so.1.0.0 '),  (2 $ <'/usr/lib/libssl.dylib ')
+OPENSSL =: sslp , (IFIOS + (;: 'Win Linux Android Darwin') i. <UNAME_z_) pick 'libeay32.dll '; ('libssl.so';'/system/lib/libcrypto.so'),  (2 $ <'/usr/lib/libssl.dylib ')
 NB.OPENSSL =: sslp , (IFIOS + (;: 'Win Linux Android Darwin') i. <UNAME_z_) pick 'libeay32.dll '; (2 $ <'libssl.so ');  (2 $ <'libssl.0.9.8.dylib ')
 
 SSLE =: sslp , '\openssl'
